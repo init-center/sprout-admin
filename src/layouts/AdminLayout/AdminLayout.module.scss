@@ -1,0 +1,45 @@
+.layout {
+  width: 100%;
+  min-height: 100% !important;
+
+  .sider {
+    overflow-x: hidden;
+
+    .menu {
+      width: 100%;
+      overflow: hidden;
+    }
+  }
+
+  .layout-has-sider {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    .padding-sider {
+      flex: 0 0 200px;
+      width: 200px;
+
+      &.collapsed {
+        flex: 0 0 58px;
+        width: 58px;
+      }
+    }
+    .content-box {
+      width: calc(100% - 200px);
+      flex: 1 1 calc(100% - 200px);
+      &.collapsed {
+        width: calc(100% - 58px);
+        flex: 1 1 calc(100% - 58px);
+      }
+      .header {
+        height: 48px;
+        background-color: #fff;
+        padding: 0 10px;
+      }
+
+      .content {
+        padding: 20px;
+      }
+    }
+  }
+}

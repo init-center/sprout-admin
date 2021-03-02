@@ -1,0 +1,75 @@
+.home {
+  width: 100%;
+  height: 100%;
+
+  .top-card-box {
+    margin-left: -12px;
+    margin-right: -12px;
+
+    .card-wrapper {
+      padding: 0 12px;
+      margin-bottom: 24px;
+      .card {
+        width: 100%;
+
+        & > :global(.ant-card-body) {
+          padding: 20px 24px 8px;
+        }
+
+        .card-chart {
+          width: 100%;
+          height: 50px !important;
+        }
+
+        .card-bottom {
+          font-size: 14px;
+          margin-top: 10px;
+          padding-top: 10px;
+          border-top: 1px solid #ddd;
+        }
+      }
+    }
+  }
+
+  .data-analysis-box {
+    width: 100%;
+
+    .data-analysis-row {
+      width: 100%;
+
+      .data-analysis-title {
+        color: rgba(0, 0, 0, 0.45);
+      }
+
+      .top-views-post-list {
+        list-style: none;
+        padding: 0;
+
+        .top-views-post-item {
+          margin: 16px;
+
+          .rank-number {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 100%;
+            text-align: center;
+            vertical-align: middle;
+            background-color: #ddd;
+            margin-right: 16px;
+          }
+
+          &:nth-child(-n + 3) .rank-number {
+            color: #fff;
+            background-color: #000;
+          }
+        }
+      }
+    }
+  }
+
+  .post-tags-chart-box {
+    width: 100%;
+    margin-top: 24px;
+  }
+}

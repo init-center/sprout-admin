@@ -1,0 +1,67 @@
+@mixin anchor-with-fixed($fixed-height) {
+  padding-top: $fixed-height;
+  margin-top: -$fixed-height + 16px;
+}
+
+@mixin reset-pagination-style {
+  * {
+    user-select: none;
+  }
+
+  :global(.ant-pagination-item-active) {
+    background-color: #fb7299;
+    border-color: #fb7299;
+
+    a {
+      color: #fff;
+    }
+  }
+
+  :global(.ant-pagination-item):not(:global(.ant-pagination-item-active)) {
+    &:hover {
+      border-color: #fb7299;
+
+      a {
+        color: #fb7299;
+      }
+    }
+  }
+
+  :global(.ant-pagination-item-container) {
+    :global(.ant-pagination-item-link-icon) {
+      color: #fb7299;
+    }
+  }
+
+  :global(.ant-pagination):not(:global(.mini)) {
+    :global(.ant-pagination-prev):not(:global(.ant-pagination-disabled)),
+    :global(.ant-pagination-next):not(:global(.ant-pagination-disabled)) {
+      :global(.ant-pagination-item-link) {
+        &:hover {
+          border-color: #fb7299;
+          color: #fb7299;
+        }
+      }
+    }
+  }
+
+  :global(.ant-pagination.mini) {
+    :global(.ant-pagination-prev):not(:global(.ant-pagination-disabled)),
+    :global(.ant-pagination-next):not(:global(.ant-pagination-disabled)) {
+      :global(.ant-pagination-item-link) {
+        &:hover {
+          color: #fb7299;
+        }
+      }
+    }
+  }
+
+  :global(.ant-pagination-options-quick-jumper) input:focus {
+    border-color: #fb7299;
+    box-shadow: 0 0 0 2px rgba(251, 114, 153, 0.2);
+  }
+
+  :global(.ant-pagination-options-quick-jumper) input:hover {
+    border-color: #fb7299;
+  }
+}

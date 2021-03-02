@@ -1,25 +1,52 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Suspense, lazy } from "react";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import Loading from "./components/Loading/Loading";
+import "antd/dist/antd.css";
+import "./App.css";
+
+const Home = lazy(
+  () => import(/* webpackChunkName: "Home" */ "./pages/Home/Home")
+);
+
+const PostList = lazy(
+  () => import(/* webpackChunkName: "PostList" */ "./pages/PostList/PostList")
+);
+
+const Login = lazy(
+  () => import(/* webpackChunkName: "Login" */ "./pages/Login/Login")
+);
+
+const SignUp = lazy(
+  () => import(/* webpackChunkName: "SignUp" */ "./pages/SignUp/SignUp")
+);
+
+const Write = lazy(
+  () => import(/* webpackChunkName: "Write" */ "./pages/Write/Write")
+);
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Suspense fallback={<Loading />}>
+        <Switch>
+          <Route path="/" exact>
+            <Home />
+          </Route>
+          <Route path="/postlist" exact>
+            <PostList />
+          </Route>
+          <Route path="/login" exact>
+            <Login />
+          </Route>
+          <Route path="/signup" exact>
+            <SignUp />
+          </Route>
+          <Route path="/write/:pid?">
+            <Write />
+          </Route>
+        </Switch>
+      </Suspense>
+    </Router>
   );
 }
 

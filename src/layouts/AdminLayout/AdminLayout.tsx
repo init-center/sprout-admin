@@ -94,7 +94,14 @@ const AdminLayout: FC = ({ children }) => {
               </Menu.Item>
             </SubMenu>
             <SubMenu key="sub2" icon={<CommentOutlined />} title="评论管理">
-              <Menu.Item key="e">评论列表</Menu.Item>
+              <Menu.Item
+                key="e"
+                onClick={() => {
+                  history.push("/commentlist");
+                }}
+              >
+                评论列表
+              </Menu.Item>
             </SubMenu>
             <SubMenu key="sub3" icon={<UserOutlined />} title="用户管理">
               <Menu.Item key="i">用户列表</Menu.Item>

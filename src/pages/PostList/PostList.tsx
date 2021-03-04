@@ -21,11 +21,11 @@ import { getTagColor } from "../../utils/colorPicker/colorPicker";
 import md2html from "../../utils/md2html";
 import { useImgLazyLoad } from "../../utils/lazyLoad/lazyLoad";
 import { useHistory as useRouter } from "react-router-dom";
+import { formatTime } from "../../utils/formatTime";
 import { Callbacks } from "rc-field-form/lib/interface";
 import { PostDetail, PostListType, TagType, CategoryType } from "../../types";
 import styles from "./PostList.module.scss";
 import mdStyles from "../../styles/mdStyle.module.scss";
-import { formatTime } from "../../utils/formatTime";
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
@@ -89,12 +89,12 @@ const PostList: FC = () => {
 
   const getAdminPosts = useCallback<
     (
+      searchValues?: SearchValuesType,
       limit?: number,
-      page?: number,
-      searchValues?: SearchValuesType
+      page?: number
     ) => Promise<void>
   >(
-    async (limit = 7, page = 1, searchValues = searchInitialValues) => {
+    async (searchValues = searchInitialValues, limit = 7, page = 1) => {
       setIsTableLoading(true);
       const {
         pid,
@@ -420,8 +420,8 @@ const PostList: FC = () => {
 
   const pageChangeHandler = useCallback(
     (page: number, pageSize?: number | undefined) => {
-      pageSize = pageSize ?? 10;
-      getAdminPosts(pageSize, page, searchValues);
+      pageSize = pageSize ?? 7;
+      getAdminPosts(searchValues, pageSize, page);
     },
     [getAdminPosts, searchValues]
   );
@@ -665,7 +665,7 @@ const PostList: FC = () => {
   const onFinish: Callbacks<SearchValuesType>["onFinish"] = useCallback(
     (form: SearchValuesType) => {
       setSearchValues(form);
-      getAdminPosts(10, 1, form);
+      getAdminPosts(form);
     },
     [getAdminPosts]
   );

@@ -7,9 +7,9 @@ import { PageType } from "../../types";
 import styles from "./TableWrapper.module.scss";
 
 interface TableProps<DataType, SearchValuesType> {
-  searchFields: SearchItem[];
-  searchInitialValues: SearchValuesType;
-  onSearch: Callbacks<SearchValuesType>["onFinish"];
+  searchFields?: SearchItem[];
+  searchInitialValues?: SearchValuesType;
+  onSearch?: Callbacks<SearchValuesType>["onFinish"];
   onSearchValuesChange?: Callbacks<SearchValuesType>["onValuesChange"];
   columns: ColumnsType<DataType> | undefined;
   dataSource?: DataType[];
@@ -57,12 +57,14 @@ const DataTableWrapper = <
     };
     return (
       <div className={styles["table-wrapper"]}>
-        <TableSearch
-          initialValues={searchInitialValues}
-          searchFields={searchFields}
-          onSearch={onSearch}
-          onValuesChange={onSearchValuesChange}
-        />
+        {searchFields && searchInitialValues && (
+          <TableSearch
+            initialValues={searchInitialValues}
+            searchFields={searchFields}
+            onSearch={onSearch}
+            onValuesChange={onSearchValuesChange}
+          />
+        )}
         <Table<DataType>
           columns={columns}
           dataSource={dataSource}
@@ -74,6 +76,8 @@ const DataTableWrapper = <
           rowKey={(record) => {
             if (record.key) {
               return (record.key as string) + Date.now();
+            } else if (record.cid) {
+              return (record.cid as string) + Date.now();
             } else if (record.id) {
               return (record.id as string) + Date.now();
             } else if (record.pid) {

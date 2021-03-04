@@ -19,9 +19,14 @@ interface IPost {
   summary: string;
   views: number;
   createTime: string;
-  topTime: string;
+  topTime: string | null;
   commentCount: number;
   [key: string]: unknown;
+}
+
+export enum Status {
+  False = 0,
+  True,
 }
 
 export type Post = IPost;
@@ -29,10 +34,35 @@ export type Post = IPost;
 export type PostDetail = Post & {
   bgm: string;
   content: string;
-  isCommentOpen: 0 | 1;
+  isCommentOpen: Status;
   updateTime: string;
-  isDisplay: 0 | 1;
-  deleteTime: string;
+  isDisplay: Status;
+  deleteTime: string | null;
+};
+
+export enum ReviewStatus {
+  PENDING = 0,
+  RESOLVE,
+  REJECT,
+}
+
+export type CommentItem = {
+  cid: string;
+  pid: string;
+  uid: string;
+  userName: string;
+  avatar: string;
+  content: string;
+  createTime: string;
+  updateTime: string;
+  deleteTime: string | null;
+  targetCid: string | null;
+  targetUid: string | null;
+  targetName: string | null;
+  parentCid: string | null;
+  parentUid: string | null;
+  postTitle: string;
+  reviewStatus: ReviewStatus;
 };
 
 export interface PageType {
@@ -44,4 +74,9 @@ export interface PageType {
 export interface PostListType {
   page: PageType;
   list: PostDetail[];
+}
+
+export interface CommentListType {
+  page: PageType;
+  list: CommentItem[];
 }

@@ -24,6 +24,13 @@ const Write = lazy(
   () => import(/* webpackChunkName: "Write" */ "./pages/Write/Write")
 );
 
+const CommentList = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "CommentList" */ "./pages/CommentList/CommentList"
+    )
+);
+
 function App() {
   return (
     <Router>
@@ -43,6 +50,9 @@ function App() {
           </Route>
           <Route path="/write/:pid?">
             <Write />
+          </Route>
+          <Route path="/commentlist" exact>
+            <CommentList />
           </Route>
         </Switch>
       </Suspense>

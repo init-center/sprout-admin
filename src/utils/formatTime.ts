@@ -1,5 +1,8 @@
 import dayjs from "dayjs";
 
-export function formatTime(time: string, template = "YYYY-MM-DD H:m:s") {
-  return dayjs(time).format(template);
+export function formatTime(
+  time: string | Date | null,
+  template = "YYYY-MM-DD HH:mm:ss"
+) {
+  return time ? dayjs(time).format(template) : null;
 }

@@ -67,7 +67,7 @@ const AdminLayout: FC = ({ children }) => {
           <Logo isTitleShow={!isCollapsed} />
           <Menu className={styles.menu} theme="dark" mode="inline">
             <Menu.Item
-              key="m1"
+              key="home"
               icon={<HomeOutlined />}
               onClick={() => {
                 history.push("/");
@@ -77,15 +77,15 @@ const AdminLayout: FC = ({ children }) => {
             </Menu.Item>
             <SubMenu key="sub1" icon={<FormOutlined />} title="文章管理">
               <Menu.Item
-                key="a"
+                key="posts"
                 onClick={() => {
-                  history.push("/postlist");
+                  history.push("/posts");
                 }}
               >
                 文章列表
               </Menu.Item>
               <Menu.Item
-                key="b"
+                key="write"
                 onClick={() => {
                   history.push("/write");
                 }}
@@ -93,25 +93,57 @@ const AdminLayout: FC = ({ children }) => {
                 写文章
               </Menu.Item>
             </SubMenu>
-            <SubMenu key="sub2" icon={<CommentOutlined />} title="评论管理">
+            <SubMenu
+              key="comments-manage"
+              icon={<CommentOutlined />}
+              title="评论管理"
+            >
               <Menu.Item
-                key="e"
+                key="comments"
                 onClick={() => {
-                  history.push("/commentlist");
+                  history.push("/comments");
                 }}
               >
                 评论列表
               </Menu.Item>
             </SubMenu>
-            <SubMenu key="sub3" icon={<UserOutlined />} title="用户管理">
-              <Menu.Item key="i">用户列表</Menu.Item>
-              <Menu.Item key="l">权限管理</Menu.Item>
+            <SubMenu
+              key="users-manage"
+              icon={<UserOutlined />}
+              title="用户管理"
+            >
+              <Menu.Item
+                key="users"
+                onClick={() => {
+                  history.push("/users");
+                }}
+              >
+                用户列表
+              </Menu.Item>
             </SubMenu>
-            <SubMenu key="sub5" icon={<GroupOutlined />} title="分类管理">
-              <Menu.Item key="n">分类列表</Menu.Item>
+            <SubMenu
+              key="categories-manage"
+              icon={<GroupOutlined />}
+              title="分类管理"
+            >
+              <Menu.Item
+                key="categories"
+                onClick={() => {
+                  history.push("/categories");
+                }}
+              >
+                分类列表
+              </Menu.Item>
             </SubMenu>
-            <SubMenu key="sub4" icon={<TagOutlined />} title="标签管理">
-              <Menu.Item key="m">标签列表</Menu.Item>
+            <SubMenu key="tags-manage" icon={<TagOutlined />} title="标签管理">
+              <Menu.Item
+                key="tags"
+                onClick={() => {
+                  history.push("/tags");
+                }}
+              >
+                标签列表
+              </Menu.Item>
             </SubMenu>
           </Menu>
         </Sider>

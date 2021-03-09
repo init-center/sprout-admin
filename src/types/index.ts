@@ -1,12 +1,22 @@
-export interface TagType {
+export type TagType = {
   id: number;
   name: string;
-}
+};
 
-export interface CategoryType {
+export type TagListType = {
+  page: PageType;
+  list: TagType[];
+};
+
+export type CategoryType = {
   id: number;
   name: string;
-}
+};
+
+export type CategoryListType = {
+  page: PageType;
+  list: CategoryType[];
+};
 
 interface IPost {
   uid: string;
@@ -25,8 +35,8 @@ interface IPost {
 }
 
 export enum Status {
-  False = 0,
-  True,
+  FALSE = 0,
+  TRUE,
 }
 
 export type Post = IPost;
@@ -79,4 +89,52 @@ export interface PostListType {
 export interface CommentListType {
   page: PageType;
   list: CommentItem[];
+}
+
+export enum Gender {
+  MALE,
+  FEMALE,
+}
+
+export enum UserGroup {
+  ADMIN = 1,
+  DEFAULT,
+}
+
+export enum BanStatus {
+  UNBLOCK,
+  BANED,
+}
+
+export type User = {
+  uid: string;
+  name: string;
+  avatar: string;
+  email: string;
+  gender: Gender;
+  tel: string;
+  birthday: string;
+  group: UserGroup;
+  createTime: string | null;
+  updateTime: string | null;
+  deleteTime: string | null;
+  banStartTime: string | null;
+  banEndTime: string | null;
+  isBaned: BanStatus;
+};
+
+export type UpdateUserType = {
+  name?: string;
+  avatar?: string;
+  email?: string | null;
+  gender?: Gender;
+  tel?: string | null;
+  birthday?: Date | string | null;
+  group?: UserGroup;
+  isDelete?: number;
+};
+
+export interface UserListType {
+  page: PageType;
+  list: User[];
 }

@@ -3,11 +3,19 @@ import { Space, Button, Form } from "antd";
 import { Callbacks } from "rc-field-form/lib/interface";
 import { Rule } from "../../../utils/valid/valid_rules";
 import styles from "./TableSearch.module.scss";
-
 export interface SearchItem {
   name: string;
   label: ReactNode;
   rules?: Rule[];
+  normalize?: (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    value: any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    prevValue: any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    allValues: { [key: string]: any }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ) => any;
   render: () => ReactNode;
 }
 
@@ -29,6 +37,7 @@ const TableSearchWrapper = <
   }) => {
     return (
       <div className={styles["table-search"]}>
+        <h4>条件筛选</h4>
         <Form
           className={styles["list-filter"]}
           onFinish={onSearch}
@@ -37,9 +46,21 @@ const TableSearchWrapper = <
         >
           <Space align="start" wrap>
             {searchFields.map((searchField) => {
-              const { name, label, rules = [], render } = searchField;
+              const {
+                name,
+                label,
+                rules = [],
+                normalize,
+                render,
+              } = searchField;
               return (
-                <Form.Item name={name} rules={rules} key={name} label={label}>
+                <Form.Item
+                  name={name}
+                  rules={rules}
+                  key={name}
+                  label={label}
+                  normalize={normalize}
+                >
                   {render()}
                 </Form.Item>
               );

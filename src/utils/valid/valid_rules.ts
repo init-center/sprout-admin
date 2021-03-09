@@ -109,8 +109,6 @@ export const validName: Validator = (_rule, value) => {
     if (!nameRegex.test(value)) {
       return Promise.reject("请输入符合规范的用户名！");
     } else {
-      console.log(value);
-      console.log(nameRegex.test(value));
       return Promise.resolve();
     }
   } catch (err) {

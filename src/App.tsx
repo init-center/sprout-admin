@@ -31,6 +31,21 @@ const CommentList = lazy(
     )
 );
 
+const UserList = lazy(
+  () => import(/* webpackChunkName: "UserList" */ "./pages/UserList/UserList")
+);
+
+const CategoryList = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "CategoryList" */ "./pages/CategoryList/CategoryList"
+    )
+);
+
+const TagList = lazy(
+  () => import(/* webpackChunkName: "TagList" */ "./pages/TagList/TagList")
+);
+
 function App() {
   return (
     <Router>
@@ -39,7 +54,7 @@ function App() {
           <Route path="/" exact>
             <Home />
           </Route>
-          <Route path="/postlist" exact>
+          <Route path="/posts" exact>
             <PostList />
           </Route>
           <Route path="/login" exact>
@@ -51,8 +66,17 @@ function App() {
           <Route path="/write/:pid?">
             <Write />
           </Route>
-          <Route path="/commentlist" exact>
+          <Route path="/comments" exact>
             <CommentList />
+          </Route>
+          <Route path="/users" exact>
+            <UserList />
+          </Route>
+          <Route path="/categories" exact>
+            <CategoryList />
+          </Route>
+          <Route path="/tags" exact>
+            <TagList />
           </Route>
         </Switch>
       </Suspense>

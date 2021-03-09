@@ -23,7 +23,15 @@ import { useImgLazyLoad } from "../../utils/lazyLoad/lazyLoad";
 import { useHistory as useRouter } from "react-router-dom";
 import { formatTime } from "../../utils/formatTime";
 import { Callbacks } from "rc-field-form/lib/interface";
-import { PostDetail, PostListType, TagType, CategoryType } from "../../types";
+import {
+  PostDetail,
+  PostListType,
+  TagType,
+  CategoryType,
+  Post,
+  CategoryListType,
+  TagListType,
+} from "../../types";
 import styles from "./PostList.module.scss";
 import mdStyles from "../../styles/mdStyle.module.scss";
 
@@ -40,7 +48,7 @@ type SearchValuesType = {
   isDelete: number | null;
   isDisplay: number | null;
   isCommentOpen: number | null;
-  rangeDate: [Date | string | null, Date | string | null];
+  rangeDate: null | [Date | string | null, Date | string | null];
   keyword: string | null;
 };
 
@@ -61,7 +69,7 @@ const PostList: FC = () => {
   const [postList, setPostList] = useState<PostListType>({
     page: {
       currentPage: 1,
-      size: 10,
+      size: 7,
       count: 0,
     },
     list: [],
@@ -71,11 +79,17 @@ const PostList: FC = () => {
 
   const [allCategories, setAllCategories] = useState<CategoryType[]>([]);
 
+  const [tableRowKeySuffix, setTableRowKeySuffix] = useState<unknown>(
+    Date.now()
+  );
+
   const [searchValues, setSearchValues] = useState<SearchValuesType>(
     searchInitialValues
   );
 
   const [selectedPost, setSelectedPost] = useState<PostDetail | null>(null);
+
+  const [topPost, setTopPost] = useState<Post | null>(null);
 
   const [summaryModalVisible, setSummaryModalVisible] = useState<boolean>(
     false
@@ -116,14 +130,8 @@ const PostList: FC = () => {
         category,
         isCommentOpen,
         keyword,
-        createTimeStart:
-          rangeDate[0] instanceof Date
-            ? rangeDate[0].toISOString()
-            : rangeDate[0],
-        createTimeEnd:
-          rangeDate[1] instanceof Date
-            ? rangeDate[1].toISOString()
-            : rangeDate[1],
+        createTimeStart: rangeDate ? formatTime(rangeDate[0]) : null,
+        createTimeEnd: rangeDate ? formatTime(rangeDate[1]) : null,
       };
       try {
         const response = await http.get<ResponseData<PostListType>>(
@@ -135,6 +143,7 @@ const PostList: FC = () => {
         if (response.status === 200 && response.data.code === 2000) {
           if (!response.data.data) return;
           setPostList({ ...response.data.data });
+          setTableRowKeySuffix(response.data.time);
           setIsTableLoading(false);
         }
       } catch (error) {
@@ -152,11 +161,24 @@ const PostList: FC = () => {
     [router]
   );
 
+  const fetchTopPost = useCallback(async () => {
+    try {
+      const response = await http.get<ResponseData<Post>>(`/top/post`);
+      if (
+        response.status === 200 &&
+        response.data.code === 2000 &&
+        response.data.data
+      ) {
+        setTopPost(response.data.data);
+      }
+    } catch {}
+  }, []);
+
   const getAllTags = useCallback(async () => {
     try {
-      const response = await http.get<ResponseData>(`/tags`);
+      const response = await http.get<ResponseData<TagListType>>(`/tags`);
       if (response.status === 200 && response.data.code === 2000) {
-        setAllTags(response.data.data as TagType[]);
+        setAllTags(response.data.data?.list ?? []);
       }
     } catch (error) {
       const msg = error?.response?.data?.message;
@@ -168,9 +190,11 @@ const PostList: FC = () => {
 
   const getAllCategories = useCallback(async () => {
     try {
-      const response = await http.get<ResponseData>(`/categories`);
+      const response = await http.get<ResponseData<CategoryListType>>(
+        `/categories`
+      );
       if (response.status === 200 && response.data.code === 2000) {
-        setAllCategories(response.data.data as TagType[]);
+        setAllCategories(response.data.data?.list ?? []);
       }
     } catch (error) {
       const msg = error?.response?.data?.message;
@@ -275,7 +299,7 @@ const PostList: FC = () => {
         content: !checked
           ? "确定要取消置顶这篇文章吗？当没有置顶文章时，会默认置顶第一篇文章！"
           : `确定要置顶这篇文章吗？置顶时会取消其他文章的置顶，当前置顶文章《${
-              postList.list.filter((item) => item.topTime)[0]?.title ?? "无"
+              topPost?.title ?? "无"
             }》`,
         okText: "确定",
         cancelText: "取消",
@@ -310,7 +334,7 @@ const PostList: FC = () => {
         },
       });
     },
-    [getAdminPosts, postList.list]
+    [getAdminPosts, topPost]
   );
 
   const searchFields: SearchItem[] = [
@@ -672,9 +696,10 @@ const PostList: FC = () => {
 
   useEffect(() => {
     getAdminPosts();
+    fetchTopPost();
     getAllTags();
     getAllCategories();
-  }, [getAdminPosts, getAllTags, getAllCategories]);
+  }, [getAdminPosts, getAllTags, getAllCategories, fetchTopPost]);
 
   const [bindLazyloadTriggerEvents] = useImgLazyLoad([
     document.querySelector(".content-modal"),
@@ -706,10 +731,13 @@ const PostList: FC = () => {
           page={postList.page}
           isTableLoading={isTableLoading}
           onPageChange={pageChangeHandler}
+          rowKeyKey="pid"
+          rowKeySuffix={tableRowKeySuffix}
         />
         <Modal
           title={"摘要详情"}
           visible={summaryModalVisible}
+          destroyOnClose
           footer={null}
           onCancel={() => {
             setSelectedPost(null);
@@ -720,6 +748,7 @@ const PostList: FC = () => {
         </Modal>
         <Modal
           title={"文章详情"}
+          destroyOnClose
           wrapClassName="content-modal"
           visible={contentModalVisible}
           width="80%"

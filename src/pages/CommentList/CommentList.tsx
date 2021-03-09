@@ -15,10 +15,10 @@ import {
   Modal,
   Space,
   Switch,
-  DatePicker,
   Select,
   Badge,
 } from "antd";
+import DatePicker from "../../components/DatePicker/DatePicker";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { ColumnsType } from "antd/es/table";
 import { formatTime } from "../../utils/formatTime";
@@ -31,7 +31,7 @@ type SearchValuesType = {
   pid: string | null;
   uid: string | null;
   isDelete: number | null;
-  rangeDate: [Date | string | null, Date | string | null];
+  rangeDate: null | [Date | string | null, Date | string | null];
   reviewStatus: ReviewStatus | null;
 };
 
@@ -54,11 +54,15 @@ const CommentList: FC = () => {
   const [commentList, setCommentList] = useState<CommentListType>({
     page: {
       currentPage: 1,
-      size: 10,
+      size: 7,
       count: 0,
     },
     list: [],
   });
+
+  const [tableRowKeySuffix, setTableRowKeySuffix] = useState<unknown>(
+    Date.now()
+  );
 
   const [selectedComment, setSelectedComment] = useState<CommentItem | null>(
     null
@@ -90,14 +94,8 @@ const CommentList: FC = () => {
         uid,
         isDelete,
         reviewStatus,
-        createTimeStart:
-          rangeDate[0] instanceof Date
-            ? rangeDate[0].toISOString()
-            : rangeDate[0],
-        createTimeEnd:
-          rangeDate[1] instanceof Date
-            ? rangeDate[1].toISOString()
-            : rangeDate[1],
+        createTimeStart: rangeDate ? formatTime(rangeDate[0]) : null,
+        createTimeEnd: rangeDate ? formatTime(rangeDate[1]) : null,
       };
       try {
         const response = await http.get<ResponseData<CommentListType>>(
@@ -109,6 +107,7 @@ const CommentList: FC = () => {
         if (response.status === 200 && response.data.code === 2000) {
           if (!response.data.data) return;
           setCommentList({ ...response.data.data });
+          setTableRowKeySuffix(response.data.time);
           setIsTableLoading(false);
         }
       } catch (error) {
@@ -179,7 +178,6 @@ const CommentList: FC = () => {
           });
         },
         onCancel() {
-          getAllComments();
           return Promise.resolve();
         },
       });
@@ -546,6 +544,8 @@ const CommentList: FC = () => {
           searchFields={searchFields}
           onSearch={onSearchFinish}
           searchInitialValues={searchValues}
+          rowKeyKey="cid"
+          rowKeySuffix={tableRowKeySuffix}
         />
         <Modal
           title={"评论详情"}
@@ -572,6 +572,7 @@ const CommentList: FC = () => {
           wrapClassName="reply-modal"
           visible={replyModalVisible}
           width="80%"
+          destroyOnClose
           cancelText={"取消"}
           okText={"回复"}
           onOk={ReplyHandler}

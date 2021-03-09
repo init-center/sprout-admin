@@ -21,6 +21,8 @@ interface TableProps<DataType, SearchValuesType> {
   page?: PageType;
   isTableLoading?: boolean;
   onPageChange?: (page: number, pageSize?: number | undefined) => void;
+  rowKeyKey: string;
+  rowKeySuffix?: unknown;
 }
 
 const DataTableWrapper = <
@@ -43,6 +45,8 @@ const DataTableWrapper = <
     },
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     onPageChange = () => {},
+    rowKeyKey,
+    rowKeySuffix = Date.now(),
   }) => {
     const TableSearch = TableSearchWrapper<SearchValuesType>();
     const { currentPage, size, count } = page;
@@ -74,16 +78,7 @@ const DataTableWrapper = <
           tableLayout="fixed"
           scroll={scroll ?? {}}
           rowKey={(record) => {
-            if (record.key) {
-              return (record.key as string) + Date.now();
-            } else if (record.cid) {
-              return (record.cid as string) + Date.now();
-            } else if (record.id) {
-              return (record.id as string) + Date.now();
-            } else if (record.pid) {
-              return (record.pid as string) + Date.now();
-            }
-            return (record.uid as string) + Date.now();
+            return (record[rowKeyKey] as string) + rowKeySuffix;
           }}
         />
       </div>

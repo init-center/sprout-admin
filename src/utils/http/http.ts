@@ -6,6 +6,7 @@ export interface ResponseData<T = unknown> {
   code: number;
   message: string;
   data?: T;
+  time: number;
 }
 
 // create axios instance

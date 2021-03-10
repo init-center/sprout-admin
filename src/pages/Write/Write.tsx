@@ -19,7 +19,14 @@ import combineClassNames from "../../utils/combineClassNames";
 import Editor, { EditorRef } from "../../components/Editor/Editor";
 import stripTags from "striptags";
 import { Callbacks } from "rc-field-form/lib/interface";
-import { PostDetail, TagType, CategoryType, Post } from "../../types";
+import {
+  PostDetail,
+  TagType,
+  CategoryType,
+  Post,
+  TagListType,
+  CategoryListType,
+} from "../../types";
 import styles from "./Write.module.scss";
 import { urlRegexp } from "../../utils/constants";
 
@@ -128,9 +135,9 @@ const Write: FC = () => {
 
   const getAllTags = useCallback(async () => {
     try {
-      const response = await http.get<ResponseData>(`/tags`);
+      const response = await http.get<ResponseData<TagListType>>(`/tags`);
       if (response.status === 200 && response.data.code === 2000) {
-        setAllTags(response.data.data as TagType[]);
+        setAllTags(response.data.data?.list ?? []);
       }
     } catch (error) {
       const msg = error?.response?.data?.message;
@@ -142,12 +149,11 @@ const Write: FC = () => {
 
   const getAllCategories = useCallback(async () => {
     try {
-      const response = await http.get<ResponseData<CategoryType[]>>(
+      const response = await http.get<ResponseData<CategoryListType>>(
         `/categories`
       );
       if (response.status === 200 && response.data.code === 2000) {
-        const categories = response.data.data ?? [];
-        setAllCategories(categories);
+        setAllCategories(response.data.data?.list ?? []);
       }
     } catch (error) {
       const msg = error?.response?.data?.message;

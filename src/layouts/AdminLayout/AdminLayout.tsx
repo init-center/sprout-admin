@@ -11,12 +11,13 @@ import {
 import zhCN from "antd/lib/locale/zh_CN";
 import moment from "moment";
 import "moment/locale/zh-cn";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import Logo from "../../components/Logo/Logo";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import styles from "./AdminLayout.module.scss";
 import combineClassNames from "../../utils/combineClassNames";
 import http, { ResponseData } from "../../utils/http/http";
+import { findSubMenuOfPath } from "../../routes/routes";
 
 moment.locale("zh-cn");
 
@@ -25,7 +26,13 @@ const { SubMenu } = Menu;
 
 const AdminLayout: FC = ({ children }) => {
   const history = useHistory();
-  const [isCollapsed, setIsCollapsed] = useState(true);
+  const location = useLocation();
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const [openKey, setOpenKey] = useState(() => {
+    const key = findSubMenuOfPath(location.pathname)?.key;
+    return key ? [key] : [];
+  });
 
   useEffect(() => {
     (async () => {
@@ -50,7 +57,7 @@ const AdminLayout: FC = ({ children }) => {
       <Layout hasSider={true} className={styles.layout}>
         <Sider
           className={styles.sider}
-          defaultCollapsed={true}
+          defaultCollapsed={isCollapsed}
           collapsible={true}
           collapsedWidth="58"
           onCollapse={(collapsed) => {
@@ -65,9 +72,19 @@ const AdminLayout: FC = ({ children }) => {
           }}
         >
           <Logo isTitleShow={!isCollapsed} />
-          <Menu className={styles.menu} theme="dark" mode="inline">
+          <Menu
+            className={styles.menu}
+            theme="dark"
+            mode="inline"
+            defaultSelectedKeys={["/"]}
+            selectedKeys={[location.pathname]}
+            openKeys={openKey}
+            onOpenChange={(openKeys) => {
+              setOpenKey(openKeys as string[]);
+            }}
+          >
             <Menu.Item
-              key="home"
+              key="/"
               icon={<HomeOutlined />}
               onClick={() => {
                 history.push("/");
@@ -75,9 +92,13 @@ const AdminLayout: FC = ({ children }) => {
             >
               首页
             </Menu.Item>
-            <SubMenu key="sub1" icon={<FormOutlined />} title="文章管理">
+            <SubMenu
+              key="/posts-manage"
+              icon={<FormOutlined />}
+              title="文章管理"
+            >
               <Menu.Item
-                key="posts"
+                key="/posts"
                 onClick={() => {
                   history.push("/posts");
                 }}
@@ -85,7 +106,7 @@ const AdminLayout: FC = ({ children }) => {
                 文章列表
               </Menu.Item>
               <Menu.Item
-                key="write"
+                key="/write"
                 onClick={() => {
                   history.push("/write");
                 }}
@@ -94,12 +115,12 @@ const AdminLayout: FC = ({ children }) => {
               </Menu.Item>
             </SubMenu>
             <SubMenu
-              key="comments-manage"
+              key="/comments-manage"
               icon={<CommentOutlined />}
               title="评论管理"
             >
               <Menu.Item
-                key="comments"
+                key="/comments"
                 onClick={() => {
                   history.push("/comments");
                 }}
@@ -108,12 +129,12 @@ const AdminLayout: FC = ({ children }) => {
               </Menu.Item>
             </SubMenu>
             <SubMenu
-              key="users-manage"
+              key="/users-manage"
               icon={<UserOutlined />}
               title="用户管理"
             >
               <Menu.Item
-                key="users"
+                key="/users"
                 onClick={() => {
                   history.push("/users");
                 }}
@@ -122,12 +143,12 @@ const AdminLayout: FC = ({ children }) => {
               </Menu.Item>
             </SubMenu>
             <SubMenu
-              key="categories-manage"
+              key="/categories-manage"
               icon={<GroupOutlined />}
               title="分类管理"
             >
               <Menu.Item
-                key="categories"
+                key="/categories"
                 onClick={() => {
                   history.push("/categories");
                 }}
@@ -135,9 +156,9 @@ const AdminLayout: FC = ({ children }) => {
                 分类列表
               </Menu.Item>
             </SubMenu>
-            <SubMenu key="tags-manage" icon={<TagOutlined />} title="标签管理">
+            <SubMenu key="/tags-manage" icon={<TagOutlined />} title="标签管理">
               <Menu.Item
-                key="tags"
+                key="/tags"
                 onClick={() => {
                   history.push("/tags");
                 }}

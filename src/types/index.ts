@@ -138,3 +138,12 @@ export interface UserListType {
   page: PageType;
   list: User[];
 }
+
+export interface OpenSubMenuType {
+  name: string;
+  key: string;
+}
+export interface LocationItemType {
+  name: string;
+  path: string;
+}

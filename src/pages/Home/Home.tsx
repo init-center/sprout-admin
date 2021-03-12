@@ -1,10 +1,178 @@
-import React, { FC } from "react";
+import React, { FC, useState, useEffect, useCallback } from "react";
 import AdminLayout from "../../layouts/AdminLayout/AdminLayout";
 import ReactEcharts from "echarts-for-react";
-import { Card, Statistic, Row, Col } from "antd";
+import { Card, Statistic, Row, Col, message, Empty } from "antd";
 import styles from "./Home.module.scss";
+import {
+  BaseAnalysisType,
+  CategoriesPostsCountList,
+  PostAnalysisType,
+  PostViewsRank,
+  TagsPostsCountList,
+} from "../../types";
+import http, { ResponseData } from "../../utils/http/http";
 
 const Home: FC = () => {
+  const [userAnalysis, setUserAnalysis] = useState<BaseAnalysisType>({
+    total: 0,
+    recentIncreaseList: [],
+    todayIncrease: 0,
+  });
+
+  const [commentAnalysis, setCommentAnalysis] = useState<BaseAnalysisType>({
+    total: 0,
+    recentIncreaseList: [],
+    todayIncrease: 0,
+  });
+
+  const [postAnalysis, setPostAnalysis] = useState<PostAnalysisType>({
+    total: 0,
+    average: 0,
+    monthIncrease: 0,
+  });
+
+  const [postViewsRank, setPostViewsRank] = useState<PostViewsRank>([]);
+
+  const [
+    categoriesPostsCountList,
+    setCategoriesPostsCountList,
+  ] = useState<CategoriesPostsCountList>([]);
+
+  const [
+    tagsPostsCountList,
+    setTagsPostsCountList,
+  ] = useState<TagsPostsCountList>([]);
+
+  const fetchUserAnalysis = useCallback(async () => {
+    try {
+      const response = await http.get<ResponseData<BaseAnalysisType>>(
+        `/admin/analysis/users`
+      );
+      if (response.status === 200 && response.data.code === 2000) {
+        setUserAnalysis(
+          response.data.data ?? {
+            total: 0,
+            recentIncreaseList: [],
+            todayIncrease: 0,
+          }
+        );
+      }
+    } catch (error) {
+      const msg = error?.response?.data?.message;
+      if (msg) {
+        message.error(msg);
+      }
+    }
+  }, []);
+
+  const fetchCommentAnalysis = useCallback(async () => {
+    try {
+      const response = await http.get<ResponseData<BaseAnalysisType>>(
+        `/admin/analysis/comments`
+      );
+      if (response.status === 200 && response.data.code === 2000) {
+        setCommentAnalysis(
+          response.data.data ?? {
+            total: 0,
+            recentIncreaseList: [],
+            todayIncrease: 0,
+          }
+        );
+      }
+    } catch (error) {
+      const msg = error?.response?.data?.message;
+      if (msg) {
+        message.error(msg);
+      }
+    }
+  }, []);
+
+  const fetchPostAnalysis = useCallback(async () => {
+    try {
+      const response = await http.get<ResponseData<PostAnalysisType>>(
+        `/admin/analysis/posts`
+      );
+      if (response.status === 200 && response.data.code === 2000) {
+        setPostAnalysis(
+          response.data.data ?? {
+            total: 0,
+            average: 0,
+            monthIncrease: 0,
+          }
+        );
+      }
+    } catch (error) {
+      const msg = error?.response?.data?.message;
+      if (msg) {
+        message.error(msg);
+      }
+    }
+  }, []);
+
+  const fetchPostViewsRank = useCallback(async () => {
+    try {
+      const response = await http.get<ResponseData<PostViewsRank>>(
+        `/admin/analysis/posts/viewsrank`
+      );
+      if (response.status === 200 && response.data.code === 2000) {
+        setPostViewsRank(response.data.data ?? []);
+      }
+    } catch (error) {
+      const msg = error?.response?.data?.message;
+      if (msg) {
+        message.error(msg);
+      }
+    }
+  }, []);
+
+  const fetchCategoriesPostsCountList = useCallback(async () => {
+    try {
+      const response = await http.get<ResponseData<CategoriesPostsCountList>>(
+        `/admin/analysis/categories/postscount`
+      );
+      if (response.status === 200 && response.data.code === 2000) {
+        setCategoriesPostsCountList(response.data.data ?? []);
+      }
+    } catch (error) {
+      const msg = error?.response?.data?.message;
+      if (msg) {
+        message.error(msg);
+      }
+    }
+  }, []);
+
+  const fetchTagsPostsCountList = useCallback(async () => {
+    try {
+      const response = await http.get<ResponseData<TagsPostsCountList>>(
+        `/admin/analysis/tags/postscount`
+      );
+      if (response.status === 200 && response.data.code === 2000) {
+        setTagsPostsCountList(response.data.data ?? []);
+      }
+    } catch (error) {
+      const msg = error?.response?.data?.message;
+      if (msg) {
+        message.error(msg);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchUserAnalysis();
+    fetchCommentAnalysis();
+    fetchPostAnalysis();
+    fetchPostViewsRank();
+    fetchCategoriesPostsCountList();
+    fetchTagsPostsCountList();
+  }, [
+    fetchUserAnalysis,
+    fetchCommentAnalysis,
+    fetchPostAnalysis,
+    fetchPostViewsRank,
+    fetchCategoriesPostsCountList,
+    fetchTagsPostsCountList,
+  ]);
+
   const getViewsChartOptions = (): echarts.EChartOption => {
     return {
       xAxis: {
@@ -52,19 +220,23 @@ const Home: FC = () => {
         },
       },
       grid: {
-        top: 0,
-        right: 0,
-        bottom: 0,
-        left: 0,
+        top: 6,
+        right: 6,
+        bottom: 6,
+        left: 6,
       },
     };
   };
 
   const getUsersChartOptions = (): echarts.EChartOption => {
+    const xData = userAnalysis.recentIncreaseList.map((item) => item.date);
+    const seriesData = userAnalysis.recentIncreaseList.map(
+      (item) => item.increase
+    );
     return {
       xAxis: {
         type: "category",
-        data: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        data: xData,
         show: false,
       },
       yAxis: {
@@ -73,7 +245,7 @@ const Home: FC = () => {
       },
       series: [
         {
-          data: [820, 1932, 901, 2134, 3290, 1330, 2320],
+          data: seriesData,
           type: "bar",
           itemStyle: {
             color: "#03a9f4",
@@ -102,11 +274,15 @@ const Home: FC = () => {
   };
 
   const getCommentsChartOptions = (): echarts.EChartOption => {
+    const xData = commentAnalysis.recentIncreaseList.map((item) => item.date);
+    const seriesData = commentAnalysis.recentIncreaseList.map(
+      (item) => item.increase
+    );
     return {
       xAxis: {
         type: "category",
         boundaryGap: false,
-        data: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        data: xData,
         show: false,
       },
       yAxis: {
@@ -115,7 +291,7 @@ const Home: FC = () => {
       },
       series: [
         {
-          data: [820, 1932, 901, 2134, 3290, 1330, 2320],
+          data: seriesData,
           type: "line",
           smooth: true,
           symbol: "circle",
@@ -141,10 +317,10 @@ const Home: FC = () => {
         },
       },
       grid: {
-        top: 0,
-        right: 0,
-        bottom: 0,
-        left: 0,
+        top: 6,
+        right: 6,
+        bottom: 6,
+        left: 6,
       },
     };
   };
@@ -162,7 +338,7 @@ const Home: FC = () => {
       series: [
         {
           stack: "文章数量",
-          data: [160],
+          data: [postAnalysis.monthIncrease],
           type: "bar",
           barWidth: 10,
           itemStyle: {
@@ -171,7 +347,7 @@ const Home: FC = () => {
         },
         {
           stack: "文章数量",
-          data: [200],
+          data: [postAnalysis.average],
           type: "bar",
           itemStyle: {
             color: "#eee",
@@ -246,6 +422,45 @@ const Home: FC = () => {
     };
   };
 
+  const getPostCategoriesChartOptions = (): echarts.EChartOption => {
+    return {
+      title: {
+        text: "文章分类分布",
+        left: "center",
+      },
+      tooltip: {
+        trigger: "item",
+        backgroundColor: "rgba(255, 255, 255, 0.8)",
+        textStyle: {
+          color: "#666",
+        },
+        extraCssText: "box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);",
+        formatter: "{a} <br/>{b} : {c} ({d}%)",
+      },
+      legend: {
+        orient: "vertical",
+        left: "right",
+        data: categoriesPostsCountList.map((item) => item.name),
+      },
+      series: [
+        {
+          name: "文章占比",
+          type: "pie",
+          radius: "55%",
+          center: ["50%", "65%"],
+          data: categoriesPostsCountList,
+          emphasis: {
+            itemStyle: {
+              shadowBlur: 10,
+              shadowOffsetX: 0,
+              shadowColor: "rgba(0, 0, 0, 0.5)",
+            },
+          },
+        },
+      ],
+    };
+  };
+
   const getPostTagsChartOptions = (): echarts.EChartOption => {
     return {
       title: {
@@ -264,21 +479,15 @@ const Home: FC = () => {
       legend: {
         orient: "vertical",
         left: "right",
-        data: ["JavaScript", "Typescript", "Golang", "HTML", "CSS"],
+        data: tagsPostsCountList.map((item) => item.name),
       },
       series: [
         {
           name: "文章占比",
           type: "pie",
           radius: "55%",
-          center: ["50%", "60%"],
-          data: [
-            { value: 335, name: "JavaScript" },
-            { value: 310, name: "Typescript" },
-            { value: 234, name: "Golang" },
-            { value: 135, name: "HTML" },
-            { value: 1548, name: "CSS" },
-          ],
+          center: ["50%", "65%"],
+          data: tagsPostsCountList,
           emphasis: {
             itemStyle: {
               shadowBlur: 10,
@@ -321,12 +530,14 @@ const Home: FC = () => {
             className={styles["card-wrapper"]}
           >
             <Card className={styles.card}>
-              <Statistic title="用户总量" value={112893} />
+              <Statistic title="用户总量" value={userAnalysis.total} />
               <ReactEcharts
                 className={styles["card-chart"]}
                 option={getUsersChartOptions()}
               />
-              <div className={styles["card-bottom"]}> 今日新增用户 25 人</div>
+              <div className={styles["card-bottom"]}>
+                今日新增用户 {userAnalysis.todayIncrease} 人
+              </div>
             </Card>
           </Col>
           <Col
@@ -338,12 +549,14 @@ const Home: FC = () => {
             className={styles["card-wrapper"]}
           >
             <Card className={styles.card}>
-              <Statistic title="评论总量" value={112893} />
+              <Statistic title="评论总量" value={commentAnalysis.total} />
               <ReactEcharts
                 className={styles["card-chart"]}
                 option={getCommentsChartOptions()}
               />
-              <div className={styles["card-bottom"]}> 今日新增评论 18 条</div>
+              <div className={styles["card-bottom"]}>
+                今日新增评论 {commentAnalysis.todayIncrease} 条
+              </div>
             </Card>
           </Col>
           <Col
@@ -355,13 +568,14 @@ const Home: FC = () => {
             className={styles["card-wrapper"]}
           >
             <Card className={styles.card}>
-              <Statistic title="文章总量" value={112893} />
+              <Statistic title="文章总量" value={postAnalysis.total} />
               <ReactEcharts
                 className={styles["card-chart"]}
                 option={getPostTargetChartOptions()}
               />
               <div className={styles["card-bottom"]}>
-                本月发表 1 篇， 目标 2 篇
+                本月发表 {postAnalysis.monthIncrease} 篇， 月均{" "}
+                {postAnalysis.average} 篇
               </div>
             </Card>
           </Col>
@@ -381,44 +595,42 @@ const Home: FC = () => {
             </Col>
             <Col md={12} xs={24} sm={24} lg={12} xl={8}>
               <h4 className={styles["data-analysis-title"]}>浏览量文章排名</h4>
-              <ul className={styles["top-views-post-list"]}>
-                <li className={styles["top-views-post-item"]}>
-                  <span className={styles["rank-number"]}>1</span>
-                  这是第一篇文章
-                </li>
-                <li className={styles["top-views-post-item"]}>
-                  <span className={styles["rank-number"]}>2</span>
-                  这是第二篇文章
-                </li>
-                <li className={styles["top-views-post-item"]}>
-                  <span className={styles["rank-number"]}>3</span>
-                  这是第三篇文章
-                </li>
-                <li className={styles["top-views-post-item"]}>
-                  <span className={styles["rank-number"]}>4</span>
-                  这是第四篇文章
-                </li>
-                <li className={styles["top-views-post-item"]}>
-                  <span className={styles["rank-number"]}>5 </span>
-                  这是第五篇文章
-                </li>
-                <li className={styles["top-views-post-item"]}>
-                  <span className={styles["rank-number"]}>6</span>
-                  这是第六篇文章
-                </li>
-                <li className={styles["top-views-post-item"]}>
-                  <span className={styles["rank-number"]}>7</span>
-                  这是第七篇文章
-                </li>
-              </ul>
+              {postViewsRank.length > 0 ? (
+                <ul className={styles["top-views-post-list"]}>
+                  {postViewsRank.map((post, idx) => (
+                    <li className={styles["top-views-post-item"]}>
+                      <span className={styles["rank-number"]}>{idx + 1}</span>
+                      <a
+                        href={`https://init.center/posts/${post.pid}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {post.title}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <Empty />
+              )}
             </Col>
           </Row>
         </Card>
         <Card className={styles["post-tags-chart-box"]}>
-          <ReactEcharts
-            className={styles["card-chart"]}
-            option={getPostTagsChartOptions()}
-          />
+          <Row className={styles["data-analysis-row"]}>
+            <Col md={12} xs={24} sm={24} lg={12} xl={12}>
+              <ReactEcharts
+                className={styles["card-chart"]}
+                option={getPostCategoriesChartOptions()}
+              />
+            </Col>
+            <Col md={12} xs={24} sm={24} lg={12} xl={12}>
+              <ReactEcharts
+                className={styles["card-chart"]}
+                option={getPostTagsChartOptions()}
+              />
+            </Col>
+          </Row>
         </Card>
       </div>
     </AdminLayout>

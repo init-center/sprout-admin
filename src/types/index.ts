@@ -147,3 +147,38 @@ export interface LocationItemType {
   name: string;
   path: string;
 }
+
+interface DayIncreaseType {
+  date: string;
+  increase: number;
+}
+export interface BaseAnalysisType {
+  total: number;
+  recentIncreaseList: DayIncreaseType[];
+  todayIncrease: number;
+}
+
+export interface PostAnalysisType {
+  total: number;
+  average: number;
+  monthIncrease: number;
+}
+
+export interface PostViewsItem {
+  pid: string;
+  title: string;
+  views: number;
+}
+
+export type PostViewsRank = PostViewsItem[];
+
+export interface CategoriesPostsCount {
+  name: string;
+  value: number;
+}
+
+export type TagsPostsCount = CategoriesPostsCount;
+
+export type CategoriesPostsCountList = CategoriesPostsCount[];
+
+export type TagsPostsCountList = TagsPostsCount[];

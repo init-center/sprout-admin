@@ -23,7 +23,7 @@
 
         .card-bottom {
           font-size: 14px;
-          margin-top: 10px;
+          margin-top: 0;
           padding-top: 10px;
           border-top: 1px solid #ddd;
         }
@@ -44,9 +44,17 @@
       .top-views-post-list {
         list-style: none;
         padding: 0;
+        overflow: hidden;
 
         .top-views-post-item {
           margin: 16px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+
+          a {
+            color: #333;
+          }
 
           .rank-number {
             display: inline-block;

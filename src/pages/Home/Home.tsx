@@ -6,6 +6,7 @@ import styles from "./Home.module.scss";
 import {
   BaseAnalysisType,
   CategoriesPostsCountList,
+  ComplexAnalysisList,
   PostAnalysisType,
   PostViewsRank,
   TagsPostsCountList,
@@ -25,11 +26,21 @@ const Home: FC = () => {
     todayIncrease: 0,
   });
 
+  const [viewsAnalysis, setViewsAnalysis] = useState<BaseAnalysisType>({
+    total: 0,
+    recentIncreaseList: [],
+    todayIncrease: 0,
+  });
+
   const [postAnalysis, setPostAnalysis] = useState<PostAnalysisType>({
     total: 0,
     average: 0,
     monthIncrease: 0,
   });
+
+  const [complexAnalysis, setComplexAnalysis] = useState<ComplexAnalysisList>(
+    []
+  );
 
   const [postViewsRank, setPostViewsRank] = useState<PostViewsRank>([]);
 
@@ -87,6 +98,28 @@ const Home: FC = () => {
     }
   }, []);
 
+  const fetchViewsAnalysis = useCallback(async () => {
+    try {
+      const response = await http.get<ResponseData<BaseAnalysisType>>(
+        `/admin/analysis/views`
+      );
+      if (response.status === 200 && response.data.code === 2000) {
+        setViewsAnalysis(
+          response.data.data ?? {
+            total: 0,
+            recentIncreaseList: [],
+            todayIncrease: 0,
+          }
+        );
+      }
+    } catch (error) {
+      const msg = error?.response?.data?.message;
+      if (msg) {
+        message.error(msg);
+      }
+    }
+  }, []);
+
   const fetchPostAnalysis = useCallback(async () => {
     try {
       const response = await http.get<ResponseData<PostAnalysisType>>(
@@ -100,6 +133,22 @@ const Home: FC = () => {
             monthIncrease: 0,
           }
         );
+      }
+    } catch (error) {
+      const msg = error?.response?.data?.message;
+      if (msg) {
+        message.error(msg);
+      }
+    }
+  }, []);
+
+  const fetchComplexAnalysis = useCallback(async () => {
+    try {
+      const response = await http.get<ResponseData<ComplexAnalysisList>>(
+        `/admin/analysis/complex`
+      );
+      if (response.status === 200 && response.data.code === 2000) {
+        setComplexAnalysis(response.data.data ?? []);
       }
     } catch (error) {
       const msg = error?.response?.data?.message;
@@ -160,10 +209,12 @@ const Home: FC = () => {
   useEffect(() => {
     fetchUserAnalysis();
     fetchCommentAnalysis();
+    fetchViewsAnalysis();
     fetchPostAnalysis();
     fetchPostViewsRank();
     fetchCategoriesPostsCountList();
     fetchTagsPostsCountList();
+    fetchComplexAnalysis();
   }, [
     fetchUserAnalysis,
     fetchCommentAnalysis,
@@ -171,14 +222,20 @@ const Home: FC = () => {
     fetchPostViewsRank,
     fetchCategoriesPostsCountList,
     fetchTagsPostsCountList,
+    fetchViewsAnalysis,
+    fetchComplexAnalysis,
   ]);
 
   const getViewsChartOptions = (): echarts.EChartOption => {
+    const xData = viewsAnalysis.recentIncreaseList.map((item) => item.date);
+    const seriesData = viewsAnalysis.recentIncreaseList.map(
+      (item) => item.increase
+    );
     return {
       xAxis: {
         type: "category",
         boundaryGap: false,
-        data: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        data: xData,
         show: false,
       },
       yAxis: {
@@ -187,7 +244,7 @@ const Home: FC = () => {
       },
       series: [
         {
-          data: [820, 1932, 901, 2134, 3290, 1330, 2320],
+          data: seriesData,
           type: "line",
           smooth: true,
           lineStyle: {
@@ -366,14 +423,8 @@ const Home: FC = () => {
   const getDatasetChartOptions = (): echarts.EChartOption => {
     return {
       dataset: {
-        dimensions: ["product", "访问量", "用户量", "评论量"],
-        source: [
-          { product: "八月", 访问量: 43.3, 用户量: 85.8, 评论量: 93.7 },
-          { product: "九月", 访问量: 83.1, 用户量: 73.4, 评论量: 55.1 },
-          { product: "十月", 访问量: 86.4, 用户量: 65.2, 评论量: 82.5 },
-          { product: "十一月", 访问量: 72.4, 用户量: 53.9, 评论量: 39.1 },
-          { product: "十二月", 访问量: 20.4, 用户量: 10.9, 评论量: 2.1 },
-        ],
+        dimensions: ["月份", "访问量", "评论量", "用户量"],
+        source: complexAnalysis,
       },
       xAxis: {
         type: "category",
@@ -513,12 +564,15 @@ const Home: FC = () => {
             className={styles["card-wrapper"]}
           >
             <Card className={styles.card}>
-              <Statistic title="访问总量" value={112893} />
+              <Statistic title="访问总量" value={viewsAnalysis.total} />
               <ReactEcharts
                 className={styles["card-chart"]}
                 option={getViewsChartOptions()}
               />
-              <div className={styles["card-bottom"]}> 今日访问量 123 次</div>
+              <div className={styles["card-bottom"]}>
+                {" "}
+                今日访问量 {viewsAnalysis.todayIncrease} 次
+              </div>
             </Card>
           </Col>
           <Col
@@ -598,7 +652,10 @@ const Home: FC = () => {
               {postViewsRank.length > 0 ? (
                 <ul className={styles["top-views-post-list"]}>
                   {postViewsRank.map((post, idx) => (
-                    <li className={styles["top-views-post-item"]}>
+                    <li
+                      className={styles["top-views-post-item"]}
+                      key={post.pid}
+                    >
                       <span className={styles["rank-number"]}>{idx + 1}</span>
                       <a
                         href={`https://init.center/posts/${post.pid}`}

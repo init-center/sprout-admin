@@ -182,3 +182,12 @@ export type TagsPostsCount = CategoriesPostsCount;
 export type CategoriesPostsCountList = CategoriesPostsCount[];
 
 export type TagsPostsCountList = TagsPostsCount[];
+
+export interface ComplexAnalysis {
+  month: string;
+  views: number;
+  comments: number;
+  users: number;
+}
+
+export type ComplexAnalysisList = ComplexAnalysis[];

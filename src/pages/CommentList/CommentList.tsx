@@ -244,6 +244,7 @@ const CommentList: FC = () => {
     } catch (error) {
       const msg = error?.response?.data?.message;
       if (msg) {
+        message.destroy();
         message.error(msg);
       }
     }

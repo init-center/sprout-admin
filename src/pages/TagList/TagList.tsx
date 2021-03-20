@@ -118,6 +118,9 @@ const TagList: FC = () => {
           form
         );
         if (result.status === 200 && result.data.code === 2000) {
+          setSelectedTag(null);
+          setEditModalVisible(false);
+          getAllTags();
           message.success("修改成功！");
         }
       } catch (error) {
@@ -125,10 +128,6 @@ const TagList: FC = () => {
         if (msg) {
           message.error(msg);
         }
-      } finally {
-        setSelectedTag(null);
-        setEditModalVisible(false);
-        getAllTags();
       }
     },
     [selectedTag, getAllTags]
@@ -140,7 +139,9 @@ const TagList: FC = () => {
     async (form: { name: string }) => {
       try {
         const result = await http.post<ResponseData>(`/tags`, form);
-        if (result.status === 200 && result.data.code === 2000) {
+        if (result.status === 201 && result.data.code === 2001) {
+          setSelectedTag(null);
+          getAllTags();
           message.success("新增成功！");
         }
       } catch (error) {
@@ -148,10 +149,6 @@ const TagList: FC = () => {
         if (msg) {
           message.error(msg);
         }
-      } finally {
-        setSelectedTag(null);
-        setEditModalVisible(false);
-        getAllTags();
       }
     },
     [getAllTags]

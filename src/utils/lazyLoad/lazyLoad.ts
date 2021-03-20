@@ -56,7 +56,9 @@ export function useImgLazyLoad(
     filterImgToLoad(errorUrl);
   });
 
-  triggerWrapperElements.push(document);
+  if (typeof window !== "undefined" && window?.document) {
+    triggerWrapperElements.push(document);
+  }
   triggerWrapperElements = Array.from(new Set(triggerWrapperElements));
 
   const unBindTriggerEvents = useCallback(

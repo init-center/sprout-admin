@@ -50,6 +50,13 @@ const TagList = lazy(
   () => import(/* webpackChunkName: "TagList" */ "../pages/TagList/TagList")
 );
 
+const ConfigList = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "ConfigList" */ "../pages/ConfigList/ConfigList"
+    )
+);
+
 export const routes: Route[] = [
   {
     name: "首页",
@@ -118,6 +125,15 @@ export const routes: Route[] = [
     ParentSubMenu: {
       name: "标签管理",
       key: "/tags-manage",
+    },
+  },
+  {
+    name: "配置列表",
+    path: "/configs",
+    component: ConfigList,
+    ParentSubMenu: {
+      name: "配置管理",
+      key: "/configs-manage",
     },
   },
 ];

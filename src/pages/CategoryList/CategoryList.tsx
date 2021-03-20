@@ -120,6 +120,9 @@ const CategoryList: FC = () => {
           form
         );
         if (result.status === 200 && result.data.code === 2000) {
+          setSelectedCategory(null);
+          setEditModalVisible(false);
+          getAllCategories();
           message.success("修改成功！");
         }
       } catch (error) {
@@ -127,10 +130,6 @@ const CategoryList: FC = () => {
         if (msg) {
           message.error(msg);
         }
-      } finally {
-        setSelectedCategory(null);
-        setEditModalVisible(false);
-        getAllCategories();
       }
     },
     [selectedCategory, getAllCategories]
@@ -142,7 +141,9 @@ const CategoryList: FC = () => {
     async (form: { name: string }) => {
       try {
         const result = await http.post<ResponseData>(`/categories`, form);
-        if (result.status === 200 && result.data.code === 2000) {
+        if (result.status === 201 && result.data.code === 2001) {
+          setSelectedCategory(null);
+          getAllCategories();
           message.success("新增成功！");
         }
       } catch (error) {
@@ -150,10 +151,6 @@ const CategoryList: FC = () => {
         if (msg) {
           message.error(msg);
         }
-      } finally {
-        setSelectedCategory(null);
-        setEditModalVisible(false);
-        getAllCategories();
       }
     },
     [getAllCategories]

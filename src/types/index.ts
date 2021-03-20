@@ -75,10 +75,21 @@ export type CommentItem = {
   reviewStatus: ReviewStatus;
 };
 
+export type ConfigItem = {
+  key: string;
+  value: string;
+  explain: string;
+};
+
 export interface PageType {
   currentPage: number;
   size: number;
   count: number;
+}
+
+export interface ConfigListType {
+  page: PageType;
+  list: ConfigItem[];
 }
 
 export interface PostListType {

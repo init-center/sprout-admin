@@ -7,6 +7,7 @@ import {
   FormOutlined,
   TagOutlined,
   GroupOutlined,
+  SettingOutlined,
 } from "@ant-design/icons";
 import zhCN from "antd/lib/locale/zh_CN";
 import moment from "moment";
@@ -164,6 +165,20 @@ const AdminLayout: FC = ({ children }) => {
                 }}
               >
                 标签列表
+              </Menu.Item>
+            </SubMenu>
+            <SubMenu
+              key="/configs-manage"
+              icon={<SettingOutlined />}
+              title="配置管理"
+            >
+              <Menu.Item
+                key="/configs"
+                onClick={() => {
+                  history.push("/configs");
+                }}
+              >
+                配置列表
               </Menu.Item>
             </SubMenu>
           </Menu>

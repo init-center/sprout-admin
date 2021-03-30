@@ -5,6 +5,7 @@ interface Route {
   name: string;
   path: string;
   component: ComponentType;
+  exact: boolean;
   ParentSubMenu?: OpenSubMenuType;
 }
 
@@ -62,11 +63,13 @@ export const routes: Route[] = [
     name: "首页",
     path: "/",
     component: Home,
+    exact: true,
   },
   {
     name: "文章列表",
     path: "/posts",
     component: PostList,
+    exact: true,
     ParentSubMenu: {
       name: "文章管理",
       key: "/posts-manage",
@@ -76,16 +79,29 @@ export const routes: Route[] = [
     name: "登录",
     path: "/login",
     component: Login,
+    exact: true,
   },
   {
     name: "注册",
     path: "/signup",
     component: SignUp,
+    exact: true,
   },
   {
     name: "写作",
     path: "/write",
     component: Write,
+    exact: true,
+    ParentSubMenu: {
+      name: "文章管理",
+      key: "/posts-manage",
+    },
+  },
+  {
+    name: "写作",
+    path: "/write/:pid",
+    component: Write,
+    exact: true,
     ParentSubMenu: {
       name: "文章管理",
       key: "/posts-manage",
@@ -95,6 +111,7 @@ export const routes: Route[] = [
     name: "评论列表",
     path: "/comments",
     component: CommentList,
+    exact: true,
     ParentSubMenu: {
       name: "评论管理",
       key: "/comments-manage",
@@ -104,6 +121,7 @@ export const routes: Route[] = [
     name: "用户列表",
     path: "/users",
     component: UserList,
+    exact: true,
     ParentSubMenu: {
       name: "用户管理",
       key: "/users-manage",
@@ -113,6 +131,7 @@ export const routes: Route[] = [
     name: "分类列表",
     path: "/categories",
     component: CategoryList,
+    exact: true,
     ParentSubMenu: {
       name: "分类管理",
       key: "/categories-manage",
@@ -122,6 +141,7 @@ export const routes: Route[] = [
     name: "标签列表",
     path: "/tags",
     component: TagList,
+    exact: true,
     ParentSubMenu: {
       name: "标签管理",
       key: "/tags-manage",
@@ -131,6 +151,7 @@ export const routes: Route[] = [
     name: "配置列表",
     path: "/configs",
     component: ConfigList,
+    exact: true,
     ParentSubMenu: {
       name: "配置管理",
       key: "/configs-manage",

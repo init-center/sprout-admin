@@ -215,7 +215,7 @@ const Write: FC = () => {
           message.success("创建文章成功！");
         }
       }
-      router.push("/postlist");
+      router.push("/posts");
     } catch (error) {
       const msg = error?.response?.data?.message;
       if (msg) {

@@ -73,12 +73,24 @@ export type CommentItem = {
   parentUid: string | null;
   postTitle: string;
   reviewStatus: ReviewStatus;
+  browser: string;
+  ip: string;
+  engine: string;
+  os: string;
 };
 
 export type ConfigItem = {
   key: string;
   value: string;
   explain: string;
+};
+
+export type FriendItem = {
+  id: number;
+  name: string;
+  url: string;
+  avatar: string;
+  intro: string;
 };
 
 export interface PageType {
@@ -90,6 +102,11 @@ export interface PageType {
 export interface ConfigListType {
   page: PageType;
   list: ConfigItem[];
+}
+
+export interface FriendListType {
+  page: PageType;
+  list: FriendItem[];
 }
 
 export interface PostListType {

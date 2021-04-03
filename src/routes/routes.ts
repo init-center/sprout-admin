@@ -51,6 +51,13 @@ const TagList = lazy(
   () => import(/* webpackChunkName: "TagList" */ "../pages/TagList/TagList")
 );
 
+const FriendList = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "FriendList" */ "../pages/FriendList/FriendList"
+    )
+);
+
 const ConfigList = lazy(
   () =>
     import(
@@ -145,6 +152,16 @@ export const routes: Route[] = [
     ParentSubMenu: {
       name: "标签管理",
       key: "/tags-manage",
+    },
+  },
+  {
+    name: "友链列表",
+    path: "/friends",
+    component: FriendList,
+    exact: true,
+    ParentSubMenu: {
+      name: "友链管理",
+      key: "/friends-manage",
     },
   },
   {

@@ -168,6 +168,20 @@ const AdminLayout: FC = ({ children }) => {
               </Menu.Item>
             </SubMenu>
             <SubMenu
+              key="/friends-manage"
+              icon={<GroupOutlined />}
+              title="友链管理"
+            >
+              <Menu.Item
+                key="/friends"
+                onClick={() => {
+                  history.push("/friends");
+                }}
+              >
+                友链列表
+              </Menu.Item>
+            </SubMenu>
+            <SubMenu
               key="/configs-manage"
               icon={<SettingOutlined />}
               title="配置管理"

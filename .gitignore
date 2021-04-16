@@ -11,6 +11,12 @@
 # production
 /build
 
+# config
+config.ts
+config.*
+configs.ts
+configs.*
+
 # misc
 .DS_Store
 .env.local

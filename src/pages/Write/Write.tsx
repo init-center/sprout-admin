@@ -61,10 +61,10 @@ const Write: FC = memo(() => {
     categoryName: "",
     tags: [],
     title: "",
-    cover: "http://static.init.center/common/images/compressed/yjk6ml-min.jpg",
+    cover: "https://static.init.center/common/images/compressed/yjk6ml-min.jpg",
     isTop: 0,
     bgm:
-      "http://static.init.center/common/music/%E5%88%98%E7%91%9E%E7%90%A6-%E6%9D%A5%E4%B8%8D%E5%8F%8A.mp3",
+      "https://static.init.center/common/music/%E5%88%98%E7%91%9E%E7%90%A6-%E6%9D%A5%E4%B8%8D%E5%8F%8A.mp3",
     content: "",
     isCommentOpen: 1,
     isDisplay: 1,

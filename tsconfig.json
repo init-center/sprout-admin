@@ -22,5 +22,5 @@
   },
   "include": [
     "src"
-, "src/layouts/AdminLayout/AdminLayout.tsx", "src/configs.ts"  ]
+, "src/layouts/AdminLayout/AdminLayout.tsx", "configs.ts"  ]
 }

@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from "axios";
-import { SERVER_HOST } from "../../configs";
+import { SERVER_HOST } from "../../../configs";
 
 export type Response<T> = AxiosResponse<T>;
 

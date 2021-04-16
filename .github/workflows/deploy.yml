@@ -1,0 +1,33 @@
+name: Build & Publish
+
+on:
+  push:
+    branches:
+      - "master"
+      - "!dependabot/**"      # exclude dependabot branches
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x, 14.x, 15.x]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: echo "${{ secrets.APP_CONFIGS }}" > configs.ts  
+      - run: npm install yarn -g
+      - run: yarn install
+      - run: yarn build
+      - name: copy file via ssh key
+        uses: easingthemes/ssh-deploy@v2.1.5
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.ALIYUN_SECRET_KEY }}
+          ARGS: "-rltgoDzvO --delete"
+          SOURCE: "/build"
+          REMOTE_HOST: ${{ secrets.ALIYUN_HOST }}
+          REMOTE_USER: ${{ secrets.ALIYUN_USER }}
+          TARGET: "/opt/sprout_admin"

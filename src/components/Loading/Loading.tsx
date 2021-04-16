@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import styles from "./Loading.module.scss";
 
 function Loading() {
@@ -9,4 +9,4 @@ function Loading() {
   );
 }
 
-export default Loading;
+export default memo(Loading);

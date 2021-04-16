@@ -1,4 +1,11 @@
-import React, { FC, useState, useEffect, useCallback } from "react";
+import React, {
+  FC,
+  useState,
+  useEffect,
+  useCallback,
+  memo,
+  useMemo,
+} from "react";
 import AdminLayout from "../../layouts/AdminLayout/AdminLayout";
 import {
   Tag,
@@ -18,7 +25,7 @@ import { SearchItem } from "../../components/TableWrapper/TableSearch/TableSearc
 import { ColumnsType } from "antd/es/table";
 import http, { ResponseData } from "../../utils/http/http";
 import { getTagColor } from "../../utils/colorPicker/colorPicker";
-import md2html from "../../utils/md2html";
+import md2html from "../../utils/md2html/md2html";
 import { useImgLazyLoad } from "../../utils/lazyLoad/lazyLoad";
 import { useHistory as useRouter } from "react-router-dom";
 import { formatTime } from "../../utils/formatTime";
@@ -34,6 +41,7 @@ import {
 } from "../../types";
 import styles from "./PostList.module.scss";
 import mdStyles from "../../styles/mdStyle.module.scss";
+import { useChangeTitle } from "../../hooks/useChangeTitle";
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
@@ -64,7 +72,7 @@ const searchInitialValues: SearchValuesType = {
   rangeDate: [null, null],
 };
 
-const PostList: FC = () => {
+const PostList: FC = memo(() => {
   const router = useRouter();
   const [postList, setPostList] = useState<PostListType>({
     page: {
@@ -150,6 +158,7 @@ const PostList: FC = () => {
         const msg = error?.response?.data?.message;
         const statusCode = error?.response?.status;
         if (msg) {
+          message.destroy();
           message.error(msg);
         }
 
@@ -337,110 +346,113 @@ const PostList: FC = () => {
     [getAdminPosts, topPost]
   );
 
-  const searchFields: SearchItem[] = [
-    {
-      name: "category",
-      label: "分类",
-      render: () => {
-        return (
-          <Select style={{ width: 120 }} placeholder="未选择">
-            <Option value={0}>所有</Option>
-            <>
-              {allCategories.map((category) => (
-                <Option value={category.id} key={category.id}>
-                  {category.name}
-                </Option>
-              ))}
-            </>
-          </Select>
-        );
+  const searchFields: SearchItem[] = useMemo(
+    () => [
+      {
+        name: "category",
+        label: "分类",
+        render: () => {
+          return (
+            <Select style={{ width: 120 }} placeholder="未选择">
+              <Option value={0}>所有</Option>
+              <>
+                {allCategories.map((category) => (
+                  <Option value={category.id} key={category.id}>
+                    {category.name}
+                  </Option>
+                ))}
+              </>
+            </Select>
+          );
+        },
       },
-    },
-    {
-      name: "tag",
-      label: "标签",
-      render: () => {
-        return (
-          <Select style={{ width: 120 }} placeholder="未选择">
-            <Option value={0}>所有</Option>
-            <>
-              {allTags.map((tag) => (
-                <Option value={tag.id} key={tag.id}>
-                  {tag.name}
-                </Option>
-              ))}
-            </>
-          </Select>
-        );
+      {
+        name: "tag",
+        label: "标签",
+        render: () => {
+          return (
+            <Select style={{ width: 120 }} placeholder="未选择">
+              <Option value={0}>所有</Option>
+              <>
+                {allTags.map((tag) => (
+                  <Option value={tag.id} key={tag.id}>
+                    {tag.name}
+                  </Option>
+                ))}
+              </>
+            </Select>
+          );
+        },
       },
-    },
-    {
-      name: "isTop",
-      label: "置顶状态",
-      render: () => {
-        return (
-          <Select style={{ width: 120 }} placeholder="未选择">
-            <Option value={2}>所有</Option>
-            <Option value={1}>是</Option>
-            <Option value={0}>否</Option>
-          </Select>
-        );
+      {
+        name: "isTop",
+        label: "置顶状态",
+        render: () => {
+          return (
+            <Select style={{ width: 120 }} placeholder="未选择">
+              <Option value={2}>所有</Option>
+              <Option value={1}>是</Option>
+              <Option value={0}>否</Option>
+            </Select>
+          );
+        },
       },
-    },
-    {
-      name: "isDisplay",
-      label: "显示状态",
-      render: () => {
-        return (
-          <Select style={{ width: 120 }} placeholder="未选择">
-            <Option value={2}>所有</Option>
-            <Option value={1}>是</Option>
-            <Option value={0}>否</Option>
-          </Select>
-        );
+      {
+        name: "isDisplay",
+        label: "显示状态",
+        render: () => {
+          return (
+            <Select style={{ width: 120 }} placeholder="未选择">
+              <Option value={2}>所有</Option>
+              <Option value={1}>是</Option>
+              <Option value={0}>否</Option>
+            </Select>
+          );
+        },
       },
-    },
-    {
-      name: "isDelete",
-      label: "删除状态",
-      render: () => {
-        return (
-          <Select style={{ width: 120 }} placeholder="未选择">
-            <Option value={2}>所有</Option>
-            <Option value={1}>是</Option>
-            <Option value={0}>否</Option>
-          </Select>
-        );
+      {
+        name: "isDelete",
+        label: "删除状态",
+        render: () => {
+          return (
+            <Select style={{ width: 120 }} placeholder="未选择">
+              <Option value={2}>所有</Option>
+              <Option value={1}>是</Option>
+              <Option value={0}>否</Option>
+            </Select>
+          );
+        },
       },
-    },
-    {
-      name: "isCommentOpen",
-      label: "评论开启状态",
-      render: () => {
-        return (
-          <Select style={{ width: 120 }} placeholder="未选择">
-            <Option value={2}>所有</Option>
-            <Option value={1}>是</Option>
-            <Option value={0}>否</Option>
-          </Select>
-        );
+      {
+        name: "isCommentOpen",
+        label: "评论开启状态",
+        render: () => {
+          return (
+            <Select style={{ width: 120 }} placeholder="未选择">
+              <Option value={2}>所有</Option>
+              <Option value={1}>是</Option>
+              <Option value={0}>否</Option>
+            </Select>
+          );
+        },
       },
-    },
-    {
-      name: "rangeDate",
-      label: "创建时间",
-      render: () => {
-        return <RangePicker />;
+      {
+        name: "rangeDate",
+        label: "创建时间",
+        render: () => {
+          return <RangePicker />;
+        },
       },
-    },
-    {
-      name: "keyword",
-      label: false,
-      render: () => {
-        return <Input placeholder="请输入标题或内容关键词" />;
+      {
+        name: "keyword",
+        label: false,
+        render: () => {
+          return <Input placeholder="请输入标题或内容关键词" />;
+        },
       },
-    },
-  ];
+    ],
+    [allCategories, allTags]
+  );
 
   const pageChangeHandler = useCallback(
     (page: number, pageSize?: number | undefined) => {
@@ -450,241 +462,244 @@ const PostList: FC = () => {
     [getAdminPosts, searchValues]
   );
 
-  const columns: ColumnsType<PostDetail> = [
-    {
-      title: "标题",
-      dataIndex: "title",
-      key: "title",
-      width: 150,
-      align: "center",
-      fixed: "left",
-      render: (title: string, record: PostDetail) => {
-        return (
-          <a
-            href={`https://init.center/posts/${record.pid}`}
-            title={title}
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              display: "inline-block",
-              width: "100%",
-              whiteSpace: "nowrap",
-              textOverflow: "ellipsis",
-              overflow: "hidden",
-            }}
-          >
-            {title}
-          </a>
-        );
+  const columns: ColumnsType<PostDetail> = useMemo(
+    () => [
+      {
+        title: "标题",
+        dataIndex: "title",
+        key: "title",
+        width: 150,
+        align: "center",
+        fixed: "left",
+        render: (title: string, record: PostDetail) => {
+          return (
+            <a
+              href={`https://init.center/posts/${record.pid}`}
+              title={title}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                display: "inline-block",
+                width: "100%",
+                whiteSpace: "nowrap",
+                textOverflow: "ellipsis",
+                overflow: "hidden",
+              }}
+            >
+              {title}
+            </a>
+          );
+        },
       },
-    },
-    {
-      title: "分类",
-      dataIndex: "categoryName",
-      key: "categoryName",
-      align: "center",
-      width: 80,
-      render: (category: string, record) => (
-        <Tag color={getTagColor(record.categoryId)} key={category}>
-          {category}
-        </Tag>
-      ),
-    },
-    {
-      title: "创建时间",
-      dataIndex: "createTime",
-      key: "createTime",
-      align: "center",
-      width: 120,
-      render: (createTime: string) => formatTime(createTime),
-    },
-    {
-      title: "浏览量",
-      dataIndex: "views",
-      key: "views",
-      align: "center",
-      width: 80,
-      ellipsis: true,
-    },
-    {
-      title: "喜欢量",
-      dataIndex: "favorites",
-      key: "favorites",
-      align: "center",
-      width: 80,
-      ellipsis: true,
-    },
-    {
-      title: "封面",
-      dataIndex: "cover",
-      key: "cover",
-      align: "center",
-      width: 120,
-      render: (url: string) => (
-        <Image src={url} placeholder={true} width={100} alt="cover" />
-      ),
-    },
-    {
-      title: "摘要",
-      dataIndex: "summary",
-      key: "summary",
-      align: "center",
-      width: 120,
-      render: (_summary: string, record: PostDetail) => (
-        <Button
-          type="link"
-          onClick={() => {
-            setSelectedPost(record);
-            setSummaryModalVisible(true);
-          }}
-        >
-          点击查看
-        </Button>
-      ),
-    },
-    {
-      title: "内容",
-      dataIndex: "content",
-      key: "content",
-      align: "center",
-      width: 120,
-      render: (_content: string, record: PostDetail) => (
-        <Button
-          type="link"
-          onClick={() => {
-            setSelectedPost(record);
-            setContentModalVisible(true);
-          }}
-        >
-          点击查看
-        </Button>
-      ),
-    },
-    {
-      title: "标签",
-      key: "tags",
-      dataIndex: "tags",
-      align: "center",
-      width: 200,
-      render: (tags: TagType[]) => (
-        <>
-          {tags.map((tag) => {
-            const tagName =
-              tag.name.slice(0, 1).toUpperCase() + tag.name.slice(1);
-            return (
-              <Tag color={getTagColor(tag.id)} key={tag.id}>
-                {tagName}
-              </Tag>
-            );
-          })}
-        </>
-      ),
-    },
-    {
-      title: "背景音乐",
-      dataIndex: "bgm",
-      key: "bgm",
-      align: "center",
-      width: 340,
-      render: (url: string) => (
-        <audio src={url} controls style={{ outline: 0 }}>
-          您的浏览器不支持 audio 标签。
-        </audio>
-      ),
-    },
-    {
-      title: "显示状态",
-      key: "isDisplay",
-      dataIndex: "isDisplay",
-      align: "center",
-      width: 100,
-      render: (isDisplay: number, record) => (
-        <Switch
-          checkedChildren="显示"
-          unCheckedChildren="隐藏"
-          defaultChecked={Boolean(isDisplay)}
-          onChange={(checked) => {
-            toggleDisplay(record, checked);
-          }}
-        />
-      ),
-    },
-    {
-      title: "评论开启状态",
-      key: "isCommentOpen",
-      dataIndex: "isCommentOpen",
-      align: "center",
-      width: 100,
-      render: (isCommentOpen: number, record) => (
-        <Switch
-          checkedChildren="开启"
-          unCheckedChildren="关闭"
-          defaultChecked={Boolean(isCommentOpen)}
-          onChange={(checked) => {
-            toggleCommentOpen(record, checked);
-          }}
-        />
-      ),
-    },
-    {
-      title: "置顶状态",
-      key: "topTime",
-      dataIndex: "topTime",
-      align: "center",
-      width: 100,
-      render: (topTime: string | null, record) => (
-        <Switch
-          checkedChildren="开启"
-          unCheckedChildren="关闭"
-          defaultChecked={Boolean(topTime)}
-          onChange={(checked) => {
-            toggleTop(record, checked);
-          }}
-        />
-      ),
-    },
-    {
-      title: "操作",
-      key: "action",
-      fixed: "right",
-      align: "center",
-      width: 140,
-      render: (_, record) => (
-        <Space size="small">
+      {
+        title: "分类",
+        dataIndex: "categoryName",
+        key: "categoryName",
+        align: "center",
+        width: 80,
+        render: (category: string, record) => (
+          <Tag color={getTagColor(record.categoryId)} key={category}>
+            {category}
+          </Tag>
+        ),
+      },
+      {
+        title: "创建时间",
+        dataIndex: "createTime",
+        key: "createTime",
+        align: "center",
+        width: 120,
+        render: (createTime: string) => formatTime(createTime),
+      },
+      {
+        title: "浏览量",
+        dataIndex: "views",
+        key: "views",
+        align: "center",
+        width: 80,
+        ellipsis: true,
+      },
+      {
+        title: "喜欢量",
+        dataIndex: "favorites",
+        key: "favorites",
+        align: "center",
+        width: 80,
+        ellipsis: true,
+      },
+      {
+        title: "封面",
+        dataIndex: "cover",
+        key: "cover",
+        align: "center",
+        width: 120,
+        render: (url: string) => (
+          <Image src={url} placeholder={true} width={100} alt="cover" />
+        ),
+      },
+      {
+        title: "摘要",
+        dataIndex: "summary",
+        key: "summary",
+        align: "center",
+        width: 120,
+        render: (_summary: string, record: PostDetail) => (
           <Button
-            type="primary"
-            size="small"
-            key="1"
+            type="link"
             onClick={() => {
-              router.push(`/write/${record.pid}`);
+              setSelectedPost(record);
+              setSummaryModalVisible(true);
             }}
           >
-            编辑
+            点击查看
           </Button>
-          {record.deleteTime ? (
+        ),
+      },
+      {
+        title: "内容",
+        dataIndex: "content",
+        key: "content",
+        align: "center",
+        width: 120,
+        render: (_content: string, record: PostDetail) => (
+          <Button
+            type="link"
+            onClick={() => {
+              setSelectedPost(record);
+              setContentModalVisible(true);
+            }}
+          >
+            点击查看
+          </Button>
+        ),
+      },
+      {
+        title: "标签",
+        key: "tags",
+        dataIndex: "tags",
+        align: "center",
+        width: 200,
+        render: (tags: TagType[]) => (
+          <>
+            {tags.map((tag) => {
+              const tagName =
+                tag.name.slice(0, 1).toUpperCase() + tag.name.slice(1);
+              return (
+                <Tag color={getTagColor(tag.id)} key={tag.id}>
+                  {tagName}
+                </Tag>
+              );
+            })}
+          </>
+        ),
+      },
+      {
+        title: "背景音乐",
+        dataIndex: "bgm",
+        key: "bgm",
+        align: "center",
+        width: 340,
+        render: (url: string) => (
+          <audio src={url} controls style={{ outline: 0 }}>
+            您的浏览器不支持 audio 标签。
+          </audio>
+        ),
+      },
+      {
+        title: "显示状态",
+        key: "isDisplay",
+        dataIndex: "isDisplay",
+        align: "center",
+        width: 100,
+        render: (isDisplay: number, record) => (
+          <Switch
+            checkedChildren="显示"
+            unCheckedChildren="隐藏"
+            defaultChecked={Boolean(isDisplay)}
+            onChange={(checked) => {
+              toggleDisplay(record, checked);
+            }}
+          />
+        ),
+      },
+      {
+        title: "评论开启状态",
+        key: "isCommentOpen",
+        dataIndex: "isCommentOpen",
+        align: "center",
+        width: 100,
+        render: (isCommentOpen: number, record) => (
+          <Switch
+            checkedChildren="开启"
+            unCheckedChildren="关闭"
+            defaultChecked={Boolean(isCommentOpen)}
+            onChange={(checked) => {
+              toggleCommentOpen(record, checked);
+            }}
+          />
+        ),
+      },
+      {
+        title: "置顶状态",
+        key: "topTime",
+        dataIndex: "topTime",
+        align: "center",
+        width: 100,
+        render: (topTime: string | null, record) => (
+          <Switch
+            checkedChildren="开启"
+            unCheckedChildren="关闭"
+            defaultChecked={Boolean(topTime)}
+            onChange={(checked) => {
+              toggleTop(record, checked);
+            }}
+          />
+        ),
+      },
+      {
+        title: "操作",
+        key: "action",
+        fixed: "right",
+        align: "center",
+        width: 140,
+        render: (_, record) => (
+          <Space size="small">
             <Button
               type="primary"
               size="small"
-              key="2"
-              onClick={() => toggleDelete(record)}
+              key="1"
+              onClick={() => {
+                router.push(`/write/${record.pid}`);
+              }}
             >
-              恢复
+              编辑
             </Button>
-          ) : (
-            <Button
-              type="primary"
-              size="small"
-              key="2"
-              danger
-              onClick={() => toggleDelete(record)}
-            >
-              删除
-            </Button>
-          )}
-        </Space>
-      ),
-    },
-  ];
+            {record.deleteTime ? (
+              <Button
+                type="primary"
+                size="small"
+                key="2"
+                onClick={() => toggleDelete(record)}
+              >
+                恢复
+              </Button>
+            ) : (
+              <Button
+                type="primary"
+                size="small"
+                key="2"
+                danger
+                onClick={() => toggleDelete(record)}
+              >
+                删除
+              </Button>
+            )}
+          </Space>
+        ),
+      },
+    ],
+    [router, toggleCommentOpen, toggleDelete, toggleDisplay, toggleTop]
+  );
 
   const onFinish: Callbacks<SearchValuesType>["onFinish"] = useCallback(
     (form: SearchValuesType) => {
@@ -693,6 +708,8 @@ const PostList: FC = () => {
     },
     [getAdminPosts]
   );
+
+  useChangeTitle("文章列表");
 
   useEffect(() => {
     getAdminPosts();
@@ -770,6 +787,6 @@ const PostList: FC = () => {
       </div>
     </AdminLayout>
   );
-};
+});
 
 export default PostList;

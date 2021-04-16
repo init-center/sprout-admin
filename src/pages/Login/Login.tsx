@@ -1,4 +1,4 @@
-import React, { FC, useEffect } from "react";
+import React, { FC, memo, useCallback, useEffect } from "react";
 import { Form, Input, Button, message } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { Callbacks } from "rc-field-form/lib/interface";
@@ -7,8 +7,9 @@ import { useHistory as useRouter } from "react-router-dom";
 import http from "../../utils/http/http";
 import backToPrevPage from "../../utils/backToPrevPage";
 import styles from "./Login.module.scss";
+import { useChangeTitle } from "../../hooks/useChangeTitle";
 
-const Login: FC = () => {
+const Login: FC = memo(() => {
   const router = useRouter();
 
   useEffect(() => {
@@ -23,7 +24,7 @@ const Login: FC = () => {
     })();
   }, []);
 
-  const login = async (values: Callbacks): Promise<void> => {
+  const login = useCallback(async (values: Callbacks): Promise<void> => {
     try {
       const result = await http.post("/session", { ...values });
       if (result.status === 201 && result.data.code === 2001) {
@@ -38,7 +39,10 @@ const Login: FC = () => {
         message.error(msg);
       }
     }
-  };
+  }, []);
+
+  useChangeTitle("登录");
+
   return (
     <div className={styles.container}>
       <div className={styles["login-box"]}>
@@ -118,6 +122,6 @@ const Login: FC = () => {
       </div>
     </div>
   );
-};
+});
 
 export default Login;

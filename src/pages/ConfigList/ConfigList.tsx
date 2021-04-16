@@ -1,4 +1,12 @@
-import React, { FC, useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  FC,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import TableWrapper from "../../components/TableWrapper/TableWrapper";
 import AdminLayout from "../../layouts/AdminLayout/AdminLayout";
 import { useHistory as useRouter } from "react-router-dom";
@@ -9,9 +17,10 @@ import { ExclamationCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { ColumnsType } from "antd/es/table";
 import { SearchItem } from "../../components/TableWrapper/TableSearch/TableSearch";
 import { Callbacks } from "rc-field-form/lib/interface";
-import md2html from "../../utils/md2html";
+import md2html from "../../utils/md2html/md2html";
 import mdStyles from "../../styles/mdStyle.module.scss";
 import Editor, { EditorRef } from "../../components/Editor/Editor";
+import { useChangeTitle } from "../../hooks/useChangeTitle";
 
 type SearchValuesType = {
   key: string | null;
@@ -28,7 +37,7 @@ const searchInitialValues: SearchValuesType = {
 const Table = TableWrapper<ConfigItem, SearchValuesType>();
 const { confirm } = Modal;
 
-const ConfigList: FC = () => {
+const ConfigList: FC = memo(() => {
   const router = useRouter();
   const [isTableLoading, setIsTableLoading] = useState<boolean>(true);
   const [configList, setConfigList] = useState<ConfigListType>({
@@ -121,11 +130,13 @@ const ConfigList: FC = () => {
   }>["onFinish"] = useCallback(
     async (form: { key: string; explain: string }) => {
       if (!selectedConfig) {
+        message.destroy();
         message.error("没有更新对象！");
         return;
       }
       const editor = editorRef2.current;
       if (!editor) {
+        message.destroy();
         message.error("未能取得配置值输入框的引用！");
         setEditModalVisible(false);
         return;
@@ -153,6 +164,7 @@ const ConfigList: FC = () => {
           setSelectedConfig(null);
           setEditModalVisible(false);
           getAllConfigs();
+          message.destroy();
           message.success("修改成功！");
         }
       } catch (error) {
@@ -196,6 +208,7 @@ const ConfigList: FC = () => {
           setAddModalVisible(false);
           setSelectedConfig(null);
           getAllConfigs();
+          message.destroy();
           message.success("新增成功！");
         }
       } catch (error) {
@@ -248,96 +261,104 @@ const ConfigList: FC = () => {
     [getAllConfigs]
   );
 
+  useChangeTitle("配置列表");
+
   useEffect(() => {
     getAllConfigs();
   }, [getAllConfigs]);
 
-  const columns: ColumnsType<ConfigItem> = [
-    {
-      title: "配置名",
-      dataIndex: "key",
-      key: "key",
-      align: "center",
-    },
-    {
-      title: "配置值",
-      dataIndex: "value",
-      key: "value",
-      align: "center",
-      width: 120,
-      render: (_content: string, record: ConfigItem) => (
-        <Button
-          type="link"
-          onClick={() => {
-            setSelectedConfig(record);
-            setValueModalVisible(true);
-          }}
-        >
-          点击查看
-        </Button>
-      ),
-    },
-    {
-      title: "配置说明",
-      dataIndex: "explain",
-      key: "explain",
-      align: "center",
-    },
-    {
-      title: "操作",
-      key: "action",
-      fixed: "right",
-      align: "center",
-      render: (_, record) => (
-        <Space size="small">
+  const columns: ColumnsType<ConfigItem> = useMemo(
+    () => [
+      {
+        title: "配置名",
+        dataIndex: "key",
+        key: "key",
+        align: "center",
+      },
+      {
+        title: "配置值",
+        dataIndex: "value",
+        key: "value",
+        align: "center",
+        width: 120,
+        render: (_content: string, record: ConfigItem) => (
           <Button
-            type="primary"
-            size="small"
-            key="1"
+            type="link"
             onClick={() => {
               setSelectedConfig(record);
-              setEditModalVisible(true);
+              setValueModalVisible(true);
             }}
           >
-            编辑
+            点击查看
           </Button>
-          <Button
-            type="primary"
-            size="small"
-            key="2"
-            danger
-            onClick={() => onDelete(record)}
-          >
-            删除
-          </Button>
-        </Space>
-      ),
-    },
-  ];
+        ),
+      },
+      {
+        title: "配置说明",
+        dataIndex: "explain",
+        key: "explain",
+        align: "center",
+      },
+      {
+        title: "操作",
+        key: "action",
+        fixed: "right",
+        align: "center",
+        render: (_, record) => (
+          <Space size="small">
+            <Button
+              type="primary"
+              size="small"
+              key="1"
+              onClick={() => {
+                setSelectedConfig(record);
+                setEditModalVisible(true);
+              }}
+            >
+              编辑
+            </Button>
+            <Button
+              type="primary"
+              size="small"
+              key="2"
+              danger
+              onClick={() => onDelete(record)}
+            >
+              删除
+            </Button>
+          </Space>
+        ),
+      },
+    ],
+    []
+  );
 
-  const searchFields: SearchItem[] = [
-    {
-      name: "key",
-      label: false,
-      render: () => {
-        return <Input placeholder="请输入配置名" />;
+  const searchFields: SearchItem[] = useMemo(
+    () => [
+      {
+        name: "key",
+        label: false,
+        render: () => {
+          return <Input placeholder="请输入配置名" />;
+        },
       },
-    },
-    {
-      name: "value",
-      label: false,
-      render: () => {
-        return <Input placeholder="请输入配置值关键词" />;
+      {
+        name: "value",
+        label: false,
+        render: () => {
+          return <Input placeholder="请输入配置值关键词" />;
+        },
       },
-    },
-    {
-      name: "explain",
-      label: false,
-      render: () => {
-        return <Input placeholder="请输入描述关键词" />;
+      {
+        name: "explain",
+        label: false,
+        render: () => {
+          return <Input placeholder="请输入描述关键词" />;
+        },
       },
-    },
-  ];
+    ],
+    []
+  );
 
   return (
     <AdminLayout>
@@ -463,6 +484,6 @@ const ConfigList: FC = () => {
       </div>
     </AdminLayout>
   );
-};
+});
 
 export default ConfigList;

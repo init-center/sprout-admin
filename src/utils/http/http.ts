@@ -1,4 +1,5 @@
 import axios, { AxiosResponse } from "axios";
+import { SERVER_HOST } from "../../configs";
 
 export type Response<T> = AxiosResponse<T>;
 
@@ -11,7 +12,7 @@ export interface ResponseData<T = unknown> {
 
 // create axios instance
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:8081",
+  baseURL: SERVER_HOST,
   timeout: 20000,
   withCredentials: true,
 });

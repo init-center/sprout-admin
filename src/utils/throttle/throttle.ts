@@ -1,4 +1,4 @@
-const throttle = (fn: (...args: unknown[]) => unknown, delay = 200) => {
+const throttle = (fn: (...args: unknown[]) => unknown, delay = 20) => {
   let lastTime = Date.now();
   return function (...args: unknown[]) {
     const now = Date.now();

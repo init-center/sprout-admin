@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useEffect, useState } from "react";
+import React, { FC, useCallback, useEffect, useMemo, useState } from "react";
 import TableWrapper from "../../components/TableWrapper/TableWrapper";
 import AdminLayout from "../../layouts/AdminLayout/AdminLayout";
 import { useHistory as useRouter } from "react-router-dom";
@@ -9,6 +9,7 @@ import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { ColumnsType } from "antd/es/table";
 import { SearchItem } from "../../components/TableWrapper/TableSearch/TableSearch";
 import { Callbacks } from "rc-field-form/lib/interface";
+import { useChangeTitle } from "../../hooks/useChangeTitle";
 
 type SearchValuesType = {
   id: string | null;
@@ -77,6 +78,7 @@ const TagList: FC = () => {
         const msg = error?.response?.data?.message;
         const statusCode = error?.response?.status;
         if (msg) {
+          message.destroy();
           message.error(msg);
         }
 
@@ -121,11 +123,13 @@ const TagList: FC = () => {
           setSelectedTag(null);
           setEditModalVisible(false);
           getAllTags();
+          message.destroy();
           message.success("修改成功！");
         }
       } catch (error) {
         const msg = error?.response?.data?.message;
         if (msg) {
+          message.destroy();
           message.error(msg);
         }
       }
@@ -147,6 +151,7 @@ const TagList: FC = () => {
       } catch (error) {
         const msg = error?.response?.data?.message;
         if (msg) {
+          message.destroy();
           message.error(msg);
         }
       }
@@ -190,71 +195,79 @@ const TagList: FC = () => {
     [getAllTags]
   );
 
+  useChangeTitle("标签列表");
+
   useEffect(() => {
     getAllTags();
   }, [getAllTags]);
 
-  const columns: ColumnsType<TagType> = [
-    {
-      title: "id",
-      dataIndex: "id",
-      key: "id",
-      align: "center",
-    },
-    {
-      title: "名称",
-      dataIndex: "name",
-      key: "name",
-      align: "center",
-    },
-    {
-      title: "操作",
-      key: "action",
-      fixed: "right",
-      align: "center",
-      render: (_, record) => (
-        <Space size="small">
-          <Button
-            type="primary"
-            size="small"
-            key="1"
-            onClick={() => {
-              setSelectedTag(record);
-              setEditModalVisible(true);
-            }}
-          >
-            编辑
-          </Button>
-          <Button
-            type="primary"
-            size="small"
-            key="2"
-            danger
-            onClick={() => onDelete(record)}
-          >
-            删除
-          </Button>
-        </Space>
-      ),
-    },
-  ];
+  const columns: ColumnsType<TagType> = useMemo(
+    () => [
+      {
+        title: "id",
+        dataIndex: "id",
+        key: "id",
+        align: "center",
+      },
+      {
+        title: "名称",
+        dataIndex: "name",
+        key: "name",
+        align: "center",
+      },
+      {
+        title: "操作",
+        key: "action",
+        fixed: "right",
+        align: "center",
+        render: (_, record) => (
+          <Space size="small">
+            <Button
+              type="primary"
+              size="small"
+              key="1"
+              onClick={() => {
+                setSelectedTag(record);
+                setEditModalVisible(true);
+              }}
+            >
+              编辑
+            </Button>
+            <Button
+              type="primary"
+              size="small"
+              key="2"
+              danger
+              onClick={() => onDelete(record)}
+            >
+              删除
+            </Button>
+          </Space>
+        ),
+      },
+    ],
+    [onDelete]
+  );
 
-  const searchFields: SearchItem[] = [
-    {
-      name: "id",
-      label: false,
-      render: () => {
-        return <Input placeholder="请输入标签的id" />;
+  const searchFields: SearchItem[] = useMemo(
+    () => [
+      {
+        name: "id",
+        label: false,
+        render: () => {
+          return <Input placeholder="请输入标签的id" />;
+        },
       },
-    },
-    {
-      name: "keyword",
-      label: false,
-      render: () => {
-        return <Input placeholder="请输入标签关键词" />;
+      {
+        name: "keyword",
+        label: false,
+        render: () => {
+          return <Input placeholder="请输入标签关键词" />;
+        },
       },
-    },
-  ];
+    ],
+    []
+  );
 
   return (
     <AdminLayout>

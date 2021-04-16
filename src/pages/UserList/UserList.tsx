@@ -1,4 +1,11 @@
-import React, { FC, useCallback, useEffect, useState } from "react";
+import React, {
+  FC,
+  memo,
+  useCallback,
+  useEffect,
+  useState,
+  useMemo,
+} from "react";
 import TableWrapper from "../../components/TableWrapper/TableWrapper";
 import AdminLayout from "../../layouts/AdminLayout/AdminLayout";
 import { useHistory as useRouter } from "react-router-dom";
@@ -32,6 +39,7 @@ import { SearchItem } from "../../components/TableWrapper/TableSearch/TableSearc
 import { Callbacks } from "rc-field-form/lib/interface";
 import { telRegexp, urlRegexp } from "../../utils/constants";
 import { validEmail, validName } from "../../utils/valid/valid_rules";
+import { useChangeTitle } from "../../hooks/useChangeTitle";
 
 type SearchValuesType = {
   uid: string | null;
@@ -64,7 +72,7 @@ const { RangePicker } = DatePicker;
 const { Option } = Select;
 const { confirm } = Modal;
 
-const UserList: FC = () => {
+const UserList: FC = memo(() => {
   const router = useRouter();
   const [isTableLoading, setIsTableLoading] = useState<boolean>(true);
   const [userList, setUserList] = useState<UserListType>({
@@ -147,6 +155,7 @@ const UserList: FC = () => {
         const msg = error?.response?.data?.message;
         const statusCode = error?.response?.status;
         if (msg) {
+          message.destroy();
           message.error(msg);
         }
 
@@ -176,10 +185,12 @@ const UserList: FC = () => {
 
   const banUserHandler = useCallback(async () => {
     if (!banRangeDate[0] || !banRangeDate[1]) {
+      message.destroy();
       message.error("未选择封禁时间！");
       return;
     }
     if (!selectedUser) {
+      message.destroy();
       message.error("未选择用户！");
       return;
     }
@@ -193,11 +204,13 @@ const UserList: FC = () => {
         }
       );
       if (response.status === 200 && response.data.code === 2000) {
+        message.destroy();
         message.success("封禁用户成功！");
       }
     } catch (error) {
       const msg = error?.response?.data?.message;
       if (msg) {
+        message.destroy();
         message.error(msg);
       }
     } finally {
@@ -222,6 +235,7 @@ const UserList: FC = () => {
                 `admin/users/${uid}/ban`
               );
               if (result.status === 200 && result.data.code === 2000) {
+                message.destroy();
                 message.success(`解禁用户${uid}成功！`);
 
                 resolve();
@@ -229,6 +243,7 @@ const UserList: FC = () => {
             } catch (error) {
               const msg = error?.response?.data?.message;
               if (msg) {
+                message.destroy();
                 message.error(msg);
               }
               resolve();
@@ -245,6 +260,7 @@ const UserList: FC = () => {
   const onUpdateUser: Callbacks<UpdateUserType>["onFinish"] = useCallback(
     async (form: UpdateUserType) => {
       if (!selectedUser) {
+        message.destroy();
         message.error("未选中用户！");
         return;
       }
@@ -260,6 +276,7 @@ const UserList: FC = () => {
           form
         );
         if (result.status === 200 && result.data.code === 2000) {
+          message.destroy();
           message.success(`修改成功`);
           setSelectedUser(null);
           setUpdateModalVisible(false);
@@ -268,6 +285,7 @@ const UserList: FC = () => {
       } catch (error) {
         const msg = error?.response?.data?.message;
         if (msg) {
+          message.destroy();
           message.error(msg);
         }
       }
@@ -319,280 +337,288 @@ const UserList: FC = () => {
     [getAllUsers]
   );
 
+  useChangeTitle("用户列表");
+
   useEffect(() => {
     getAllUsers();
   }, [getAllUsers]);
 
-  const columns: ColumnsType<User> = [
-    {
-      title: "id",
-      dataIndex: "uid",
-      key: "uid",
-      width: 150,
-      align: "center",
-    },
-    {
-      title: "用户名",
-      dataIndex: "name",
-      key: "name",
-      width: 150,
-      align: "center",
-    },
-    {
-      title: "邮箱",
-      dataIndex: "email",
-      key: "email",
-      width: 150,
-      align: "center",
-    },
-    {
-      title: "性别",
-      dataIndex: "gender",
-      key: "gender",
-      align: "center",
-      width: 40,
-      render: (gender: Gender) =>
-        gender === Gender.FEMALE
-          ? "女"
-          : gender === Gender.MALE
-          ? "男"
-          : "未知",
-    },
-    {
-      title: "头像",
-      dataIndex: "avatar",
-      key: "avatar",
-      align: "center",
-      width: 80,
-      render: (url: string) => (
-        <Image src={url} placeholder={true} width={40} alt="avatar" />
-      ),
-    },
-    {
-      title: "电话",
-      dataIndex: "tel",
-      key: "tel",
-      align: "center",
-      width: 120,
-      render: (tel: string) => tel ?? "未设置",
-    },
-    {
-      title: "创建时间",
-      dataIndex: "createTime",
-      key: "createTime",
-      align: "center",
-      width: 120,
-      render: (createTime: string) => formatTime(createTime),
-    },
-    {
-      title: "用户组",
-      dataIndex: "group",
-      key: "group",
-      align: "center",
-      width: 60,
-      render: (group: UserGroup) =>
-        group === UserGroup.ADMIN
-          ? "管理员"
-          : group === UserGroup.DEFAULT
-          ? "普通用户"
-          : "未知身份",
-    },
-    {
-      title: "封禁状态",
-      key: "isBaned",
-      dataIndex: "isBaned",
-      align: "center",
-      width: 100,
-      render: (isBaned: BanStatus, record) => {
-        return (
-          <>
-            <div>
-              <Badge status={!isBaned ? "success" : "error"} />
-              {!isBaned ? "未封禁" : "封禁中"}
-            </div>
-            {isBaned ? (
-              <p>
-                {formatTime(record.banStartTime as string)} 至{" "}
-                {formatTime(record.banEndTime as string)}
-              </p>
-            ) : null}
-          </>
-        );
+  const columns: ColumnsType<User> = useMemo(
+    () => [
+      {
+        title: "id",
+        dataIndex: "uid",
+        key: "uid",
+        width: 150,
+        align: "center",
       },
-    },
-    {
-      title: "生日",
-      dataIndex: "birthday",
-      key: "birthday",
-      align: "center",
-      width: 120,
-      render: (birthday: string) =>
-        birthday ? formatTime(birthday, "YYYY-MM-DD") : "未设置",
-    },
-    {
-      title: "操作",
-      key: "action",
-      fixed: "right",
-      align: "center",
-      width: 180,
-      render: (_, record) => (
-        <Space size="small">
-          <Button
-            type="primary"
-            size="small"
-            key="1"
-            onClick={() => {
-              setSelectedUser(record);
-              setUpdateModalVisible(true);
-            }}
-          >
-            编辑
-          </Button>
-          {record.isBaned ? (
+      {
+        title: "用户名",
+        dataIndex: "name",
+        key: "name",
+        width: 150,
+        align: "center",
+      },
+      {
+        title: "邮箱",
+        dataIndex: "email",
+        key: "email",
+        width: 150,
+        align: "center",
+      },
+      {
+        title: "性别",
+        dataIndex: "gender",
+        key: "gender",
+        align: "center",
+        width: 40,
+        render: (gender: Gender) =>
+          gender === Gender.FEMALE
+            ? "女"
+            : gender === Gender.MALE
+            ? "男"
+            : "未知",
+      },
+      {
+        title: "头像",
+        dataIndex: "avatar",
+        key: "avatar",
+        align: "center",
+        width: 80,
+        render: (url: string) => (
+          <Image src={url} placeholder={true} width={40} alt="avatar" />
+        ),
+      },
+      {
+        title: "电话",
+        dataIndex: "tel",
+        key: "tel",
+        align: "center",
+        width: 120,
+        render: (tel: string) => tel ?? "未设置",
+      },
+      {
+        title: "创建时间",
+        dataIndex: "createTime",
+        key: "createTime",
+        align: "center",
+        width: 120,
+        render: (createTime: string) => formatTime(createTime),
+      },
+      {
+        title: "用户组",
+        dataIndex: "group",
+        key: "group",
+        align: "center",
+        width: 60,
+        render: (group: UserGroup) =>
+          group === UserGroup.ADMIN
+            ? "管理员"
+            : group === UserGroup.DEFAULT
+            ? "普通用户"
+            : "未知身份",
+      },
+      {
+        title: "封禁状态",
+        key: "isBaned",
+        dataIndex: "isBaned",
+        align: "center",
+        width: 100,
+        render: (isBaned: BanStatus, record) => {
+          return (
+            <>
+              <div>
+                <Badge status={!isBaned ? "success" : "error"} />
+                {!isBaned ? "未封禁" : "封禁中"}
+              </div>
+              {isBaned ? (
+                <p>
+                  {formatTime(record.banStartTime as string)} 至{" "}
+                  {formatTime(record.banEndTime as string)}
+                </p>
+              ) : null}
+            </>
+          );
+        },
+      },
+      {
+        title: "生日",
+        dataIndex: "birthday",
+        key: "birthday",
+        align: "center",
+        width: 120,
+        render: (birthday: string) =>
+          birthday ? formatTime(birthday, "YYYY-MM-DD") : "未设置",
+      },
+      {
+        title: "操作",
+        key: "action",
+        fixed: "right",
+        align: "center",
+        width: 180,
+        render: (_, record) => (
+          <Space size="small">
             <Button
               type="primary"
               size="small"
-              key="2"
-              onClick={() => {
-                unblockUser(record.uid, record.name);
-              }}
-            >
-              解禁
-            </Button>
-          ) : (
-            <Button
-              type="primary"
-              size="small"
-              key="2"
+              key="1"
               onClick={() => {
                 setSelectedUser(record);
-                setBanModalVisible(true);
+                setUpdateModalVisible(true);
               }}
             >
-              封禁
+              编辑
             </Button>
-          )}
-          {record.deleteTime ? (
-            <Button
-              type="primary"
-              size="small"
-              key="3"
-              onClick={() => toggleDelete(record)}
-            >
-              恢复
-            </Button>
-          ) : (
-            <Button
-              type="primary"
-              size="small"
-              key="3"
-              danger
-              onClick={() => toggleDelete(record)}
-            >
-              删除
-            </Button>
-          )}
-        </Space>
-      ),
-    },
-  ];
+            {record.isBaned ? (
+              <Button
+                type="primary"
+                size="small"
+                key="2"
+                onClick={() => {
+                  unblockUser(record.uid, record.name);
+                }}
+              >
+                解禁
+              </Button>
+            ) : (
+              <Button
+                type="primary"
+                size="small"
+                key="2"
+                onClick={() => {
+                  setSelectedUser(record);
+                  setBanModalVisible(true);
+                }}
+              >
+                封禁
+              </Button>
+            )}
+            {record.deleteTime ? (
+              <Button
+                type="primary"
+                size="small"
+                key="3"
+                onClick={() => toggleDelete(record)}
+              >
+                恢复
+              </Button>
+            ) : (
+              <Button
+                type="primary"
+                size="small"
+                key="3"
+                danger
+                onClick={() => toggleDelete(record)}
+              >
+                删除
+              </Button>
+            )}
+          </Space>
+        ),
+      },
+    ],
+    [toggleDelete, unblockUser]
+  );
 
-  const searchFields: SearchItem[] = [
-    {
-      name: "isBaned",
-      label: "封禁状态",
-      render: () => {
-        return (
-          <Select style={{ width: 120 }} placeholder="未选择">
-            <Option value={2}>所有</Option>
-            <Option value={0}>未封禁</Option>
-            <Option value={1}>封禁</Option>
-          </Select>
-        );
+  const searchFields: SearchItem[] = useMemo(
+    () => [
+      {
+        name: "isBaned",
+        label: "封禁状态",
+        render: () => {
+          return (
+            <Select style={{ width: 120 }} placeholder="未选择">
+              <Option value={2}>所有</Option>
+              <Option value={0}>未封禁</Option>
+              <Option value={1}>封禁</Option>
+            </Select>
+          );
+        },
       },
-    },
-    {
-      name: "isDelete",
-      label: "删除状态",
-      render: () => {
-        return (
-          <Select style={{ width: 120 }} placeholder="未选择">
-            <Option value={2}>所有</Option>
-            <Option value={1}>删除</Option>
-            <Option value={0}>未删除</Option>
-          </Select>
-        );
+      {
+        name: "isDelete",
+        label: "删除状态",
+        render: () => {
+          return (
+            <Select style={{ width: 120 }} placeholder="未选择">
+              <Option value={2}>所有</Option>
+              <Option value={1}>删除</Option>
+              <Option value={0}>未删除</Option>
+            </Select>
+          );
+        },
       },
-    },
-    {
-      name: "group",
-      label: "用户组",
-      render: () => {
-        return (
-          <Select style={{ width: 120 }} placeholder="未选择">
-            <Option value={0}>所有</Option>
-            <Option value={1}>管理员</Option>
-            <Option value={2}>普通用户</Option>
-          </Select>
-        );
+      {
+        name: "group",
+        label: "用户组",
+        render: () => {
+          return (
+            <Select style={{ width: 120 }} placeholder="未选择">
+              <Option value={0}>所有</Option>
+              <Option value={1}>管理员</Option>
+              <Option value={2}>普通用户</Option>
+            </Select>
+          );
+        },
       },
-    },
-    {
-      name: "gender",
-      label: "性别",
-      render: () => {
-        return (
-          <Select style={{ width: 120 }} placeholder="未选择">
-            <Option value={2}>所有</Option>
-            <Option value={0}>男</Option>
-            <Option value={1}>女</Option>
-          </Select>
-        );
+      {
+        name: "gender",
+        label: "性别",
+        render: () => {
+          return (
+            <Select style={{ width: 120 }} placeholder="未选择">
+              <Option value={2}>所有</Option>
+              <Option value={0}>男</Option>
+              <Option value={1}>女</Option>
+            </Select>
+          );
+        },
       },
-    },
-    {
-      name: "createRangeDate",
-      label: "创建时间",
-      render: () => {
-        return <RangePicker />;
+      {
+        name: "createRangeDate",
+        label: "创建时间",
+        render: () => {
+          return <RangePicker />;
+        },
       },
-    },
-    {
-      name: "banRangeDate",
-      label: "封禁时间",
-      render: () => {
-        return <RangePicker showTime />;
+      {
+        name: "banRangeDate",
+        label: "封禁时间",
+        render: () => {
+          return <RangePicker showTime />;
+        },
       },
-    },
-    {
-      name: "name",
-      label: false,
-      render: () => {
-        return <Input placeholder="请输入用户名" />;
+      {
+        name: "name",
+        label: false,
+        render: () => {
+          return <Input placeholder="请输入用户名" />;
+        },
       },
-    },
-    {
-      name: "uid",
-      label: false,
-      render: () => {
-        return <Input placeholder="请输入用户id" />;
+      {
+        name: "uid",
+        label: false,
+        render: () => {
+          return <Input placeholder="请输入用户id" />;
+        },
       },
-    },
-    {
-      name: "email",
-      label: false,
-      render: () => {
-        return <Input placeholder="请输入用户邮箱" />;
+      {
+        name: "email",
+        label: false,
+        render: () => {
+          return <Input placeholder="请输入用户邮箱" />;
+        },
       },
-    },
-    {
-      name: "tel",
-      label: false,
-      render: () => {
-        return <Input placeholder="请输入用户电话" />;
+      {
+        name: "tel",
+        label: false,
+        render: () => {
+          return <Input placeholder="请输入用户电话" />;
+        },
       },
-    },
-  ];
+    ],
+    []
+  );
 
   return (
     <AdminLayout>
@@ -767,6 +793,6 @@ const UserList: FC = () => {
       </div>
     </AdminLayout>
   );
-};
+});
 
 export default UserList;

@@ -1,4 +1,11 @@
-import React, { FC, useState, useRef, useEffect } from "react";
+import React, {
+  FC,
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  memo,
+} from "react";
 import { Form, Input, Button, message } from "antd";
 import {
   UserOutlined,
@@ -17,14 +24,17 @@ import { useHistory as useRouter } from "react-router-dom";
 import http from "../../utils/http/http";
 import backToPrevPage from "../../utils/backToPrevPage";
 import styles from "./SignUp.module.scss";
+import { useChangeTitle } from "../../hooks/useChangeTitle";
 
-const SignUp: FC = () => {
+const SignUp: FC = memo(() => {
   const router = useRouter();
 
   const [isSendingCode, setIsSendingCode] = useState(false);
   const sendCodeBtnRef = useRef<HTMLButtonElement>(null);
   const timerRef = useRef<number>();
   const [form] = Form.useForm();
+
+  useChangeTitle("注册");
 
   useEffect(() => {
     return (): void => {
@@ -34,7 +44,7 @@ const SignUp: FC = () => {
     };
   }, []);
 
-  const sendCode = async (): Promise<void> => {
+  const sendCode = useCallback(async (): Promise<void> => {
     if (isSendingCode) return;
     try {
       const validResult = await form.validateFields(["email"]);
@@ -60,19 +70,22 @@ const SignUp: FC = () => {
     } catch (error) {
       return;
     }
-  };
+  }, [form, isSendingCode]);
 
-  const signUp = async (values: Callbacks) => {
-    try {
-      const result = await http.post("/users", { ...values });
-      if (result.status === 201 && result.data.code === 2001) {
-        message.success("注册成功！");
-        router.push("/login");
+  const signUp = useCallback(
+    async (values: Callbacks) => {
+      try {
+        const result = await http.post("/users", { ...values });
+        if (result.status === 201 && result.data.code === 2001) {
+          message.success("注册成功！");
+          router.push("/login");
+        }
+      } catch (error) {
+        return;
       }
-    } catch (error) {
-      return;
-    }
-  };
+    },
+    [router]
+  );
 
   return (
     <div className={styles.container}>
@@ -237,6 +250,6 @@ const SignUp: FC = () => {
       </div>
     </div>
   );
-};
+});
 
 export default SignUp;

@@ -1,4 +1,11 @@
-import React, { FC, useState, useEffect, useCallback, useRef } from "react";
+import React, {
+  FC,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  memo,
+} from "react";
 import {
   Form,
   Input,
@@ -29,6 +36,7 @@ import {
 } from "../../types";
 import styles from "./Write.module.scss";
 import { urlRegexp } from "../../utils/constants";
+import { useChangeTitle } from "../../hooks/useChangeTitle";
 
 interface WritePostInfo {
   categoryId: number;
@@ -44,7 +52,7 @@ interface WritePostInfo {
   isDelete: 0 | 1;
 }
 
-const Write: FC = () => {
+const Write: FC = memo(() => {
   const router = useRouter();
   const { pid } = useParams<{ pid: string }>();
   const [form] = Form.useForm();
@@ -78,6 +86,7 @@ const Write: FC = () => {
       if (response.status === 200 && response.data.code === 2000) {
         const post = response.data.data;
         if (!post) {
+          message.destroy();
           message.error("获取文章信息错误，将跳转到新建文章页面！");
           router.push("/write");
         } else {
@@ -114,6 +123,7 @@ const Write: FC = () => {
     } catch (error) {
       const msg = error?.response?.data?.message;
       if (msg) {
+        message.destroy();
         message.error(msg);
       }
       router.push("/write");
@@ -142,6 +152,7 @@ const Write: FC = () => {
     } catch (error) {
       const msg = error?.response?.data?.message;
       if (msg) {
+        message.destroy();
         message.error(msg);
       }
     }
@@ -158,10 +169,13 @@ const Write: FC = () => {
     } catch (error) {
       const msg = error?.response?.data?.message;
       if (msg) {
+        message.destroy();
         message.error(msg);
       }
     }
   }, []);
+
+  useChangeTitle("写作");
 
   useEffect(() => {
     fetchPost();
@@ -170,59 +184,63 @@ const Write: FC = () => {
     fetchTopPost();
   }, [fetchPost, getAllTags, getAllCategories, fetchTopPost]);
 
-  const onFinish: Callbacks["onFinish"] = async (values) => {
-    const editor = editorRef.current;
-    if (!editor) {
-      message.error("未能取得内容文本输入框的引用！");
-      return;
-    }
-    const [{ htmlContent }, md] = editor.getContent();
-    if (md.trim().length < 2) {
-      message.error("内容长度不能小于2！");
-      return;
-    }
+  const onFinish: Callbacks["onFinish"] = useCallback(
+    async (values) => {
+      const editor = editorRef.current;
+      if (!editor) {
+        message.error("未能取得内容文本输入框的引用！");
+        return;
+      }
+      const [{ htmlContent }, md] = editor.getContent();
+      if (md.trim().length < 2) {
+        message.error("内容长度不能小于2！");
+        return;
+      }
 
-    if (writePostInfo.tags.length < 1) {
-      message.error("至少应该有一个标签");
-      return;
-    }
+      if (writePostInfo.tags.length < 1) {
+        message.error("至少应该有一个标签");
+        return;
+      }
 
-    if (!writePostInfo.categoryId) {
-      message.error("分类不能为空!");
-      return;
-    }
+      if (!writePostInfo.categoryId) {
+        message.error("分类不能为空!");
+        return;
+      }
 
-    const summary = `${stripTags(htmlContent)
-      .replace(/[\r\n]/g, " ")
-      .slice(0, 98)}……`;
-    const post = {
-      ...values,
-      summary,
-      content: md,
-      category: writePostInfo.categoryId,
-      tags: writePostInfo.tags.map((tag) => tag.id),
-    };
+      const summary = `${stripTags(htmlContent)
+        .replace(/[\r\n]/g, " ")
+        .slice(0, 98)}……`;
+      const post = {
+        ...values,
+        summary,
+        content: md,
+        category: writePostInfo.categoryId,
+        tags: writePostInfo.tags.map((tag) => tag.id),
+      };
 
-    try {
-      if (pid) {
-        const response = await http.put<ResponseData>(`/posts/${pid}`, post);
-        if (response.status === 200 && response.data.code === 2000) {
-          message.success("修改文章成功！");
+      try {
+        if (pid) {
+          const response = await http.put<ResponseData>(`/posts/${pid}`, post);
+          if (response.status === 200 && response.data.code === 2000) {
+            message.success("修改文章成功！");
+          }
+        } else {
+          const response = await http.post<ResponseData>(`/posts`, post);
+          if (response.status === 201 && response.data.code === 2001) {
+            message.success("创建文章成功！");
+          }
         }
-      } else {
-        const response = await http.post<ResponseData>(`/posts`, post);
-        if (response.status === 201 && response.data.code === 2001) {
-          message.success("创建文章成功！");
+        router.push("/posts");
+      } catch (error) {
+        const msg = error?.response?.data?.message;
+        if (msg) {
+          message.destroy();
+          message.error(msg);
         }
       }
-      router.push("/posts");
-    } catch (error) {
-      const msg = error?.response?.data?.message;
-      if (msg) {
-        message.error(msg);
-      }
-    }
-  };
+    },
+    [pid, router, writePostInfo.categoryId, writePostInfo.tags]
+  );
 
   return (
     <AdminLayout>
@@ -579,6 +597,6 @@ const Write: FC = () => {
       </div>
     </AdminLayout>
   );
-};
+});
 
 export default Write;

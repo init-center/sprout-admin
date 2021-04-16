@@ -1,4 +1,12 @@
-import React, { FC, useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  FC,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import TableWrapper from "../../components/TableWrapper/TableWrapper";
 import AdminLayout from "../../layouts/AdminLayout/AdminLayout";
 import { useHistory as useRouter } from "react-router-dom";
@@ -22,10 +30,11 @@ import DatePicker from "../../components/DatePicker/DatePicker";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { ColumnsType } from "antd/es/table";
 import { formatTime } from "../../utils/formatTime";
-import md2html from "../../utils/md2html";
+import md2html from "../../utils/md2html/md2html";
 import { SearchItem } from "../../components/TableWrapper/TableSearch/TableSearch";
 import { Callbacks } from "rc-field-form/lib/interface";
 import Editor, { EditorRef } from "../../components/Editor/Editor";
+import { useChangeTitle } from "../../hooks/useChangeTitle";
 
 type SearchValuesType = {
   pid: string | null;
@@ -48,7 +57,7 @@ const { RangePicker } = DatePicker;
 const { Option } = Select;
 const { confirm } = Modal;
 
-const CommentList: FC = () => {
+const CommentList: FC = memo(() => {
   const router = useRouter();
   const [isTableLoading, setIsTableLoading] = useState<boolean>(true);
   const [commentList, setCommentList] = useState<CommentListType>({
@@ -114,6 +123,7 @@ const CommentList: FC = () => {
         const msg = error?.response?.data?.message;
         const statusCode = error?.response?.status;
         if (msg) {
+          message.destroy();
           message.error(msg);
         }
 
@@ -254,6 +264,8 @@ const CommentList: FC = () => {
     getAllComments();
   }, [getAllComments]);
 
+  useChangeTitle("评论列表");
+
   const [bindLazyloadTriggerEvents] = useImgLazyLoad([
     document.querySelector(".content-modal"),
   ]);
@@ -271,298 +283,304 @@ const CommentList: FC = () => {
     }
   }, [contentModalVisible, bindLazyloadTriggerEvents]);
 
-  const columns: ColumnsType<CommentItem> = [
-    {
-      title: "id",
-      dataIndex: "cid",
-      key: "cid",
-      width: 150,
-      align: "center",
-    },
-    {
-      title: "文章id",
-      dataIndex: "pid",
-      key: "pid",
-      width: 150,
-      align: "center",
-    },
-    {
-      title: "文章标题",
-      dataIndex: "postTitle",
-      key: "postTitle",
-      width: 150,
-      align: "center",
-      render: (title: string, record) => {
-        return (
-          <a
-            href={`https://init.center/posts/${record.pid}`}
-            title={title}
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              display: "inline-block",
-              width: "100%",
-              whiteSpace: "nowrap",
-              textOverflow: "ellipsis",
-              overflow: "hidden",
-            }}
-          >
-            {title}
-          </a>
-        );
+  const columns: ColumnsType<CommentItem> = useMemo(
+    () => [
+      {
+        title: "id",
+        dataIndex: "cid",
+        key: "cid",
+        width: 150,
+        align: "center",
       },
-    },
-    {
-      title: "用户id",
-      dataIndex: "uid",
-      key: "uid",
-      width: 150,
-      align: "center",
-    },
-    {
-      title: "用户名",
-      dataIndex: "userName",
-      key: "userName",
-      align: "center",
-      width: 80,
-    },
-    {
-      title: "用户头像",
-      dataIndex: "avatar",
-      key: "avatar",
-      align: "center",
-      width: 80,
-      render: (url: string) => (
-        <Image src={url} placeholder={true} width={40} alt="avatar" />
-      ),
-    },
-    {
-      title: "评论内容",
-      dataIndex: "content",
-      key: "content",
-      align: "center",
-      width: 120,
-      render: (_content: string, record) => (
-        <Button
-          type="link"
-          onClick={() => {
-            setSelectedComment(record);
-            setContentModalVisible(true);
-          }}
-        >
-          点击查看
-        </Button>
-      ),
-    },
-    {
-      title: "创建时间",
-      dataIndex: "createTime",
-      key: "createTime",
-      align: "center",
-      width: 120,
-      render: (createTime: string) => formatTime(createTime),
-    },
-    {
-      title: "父级评论id",
-      dataIndex: "parentCid",
-      key: "parentCid",
-      width: 150,
-      align: "center",
-      render: (parentCid: string | null) => parentCid ?? "无",
-    },
-    {
-      title: "父级评论用户id",
-      dataIndex: "parentUid",
-      key: "parentUid",
-      width: 150,
-      align: "center",
-      render: (parentUid: string | null) => parentUid ?? "无",
-    },
-    {
-      title: "评论对象评论id",
-      dataIndex: "targetCid",
-      key: "targetCid",
-      width: 150,
-      align: "center",
-      render: (targetCid: string | null) => targetCid ?? "无",
-    },
-    {
-      title: "评论对象用户id",
-      dataIndex: "targetUid",
-      key: "targetUid",
-      width: 150,
-      align: "center",
-      render: (targetUid: string | null) => targetUid ?? "无",
-    },
-    {
-      title: "评论对象用户名",
-      dataIndex: "targetName",
-      key: "targetName",
-      width: 150,
-      align: "center",
-      render: (targetName: string | null) => targetName ?? "无",
-    },
-    {
-      title: "浏览器",
-      dataIndex: "browser",
-      key: "browser",
-      width: 150,
-      align: "center",
-      render: (targetName: string | null) => targetName ?? "未知",
-    },
-    {
-      title: "浏览器内核",
-      dataIndex: "engine",
-      key: "engine",
-      width: 150,
-      align: "center",
-      render: (targetName: string | null) => targetName ?? "未知",
-    },
-    {
-      title: "ip地址",
-      dataIndex: "ip",
-      key: "ip",
-      width: 150,
-      align: "center",
-      render: (targetName: string | null) => targetName ?? "未知",
-    },
-    {
-      title: "操作系统",
-      dataIndex: "os",
-      key: "os",
-      width: 150,
-      align: "center",
-      render: (targetName: string | null) => targetName ?? "未知",
-    },
-    {
-      title: "审核状态",
-      key: "reviewStatus",
-      dataIndex: "reviewStatus",
-      align: "center",
-      width: 100,
-      render: (reviewStatus: ReviewStatus, record) => (
-        <div>
-          <p>
-            <Badge
-              status={
-                reviewStatus === ReviewStatus.PENDING
-                  ? "warning"
-                  : reviewStatus === ReviewStatus.RESOLVE
-                  ? "success"
-                  : "error"
-              }
-            />
-            {reviewStatus === ReviewStatus.PENDING
-              ? "未审核"
-              : reviewStatus === ReviewStatus.RESOLVE
-              ? "通过"
-              : reviewStatus === ReviewStatus.REJECT
-              ? "未通过"
-              : "未知状态"}
-          </p>
-          <Switch
-            defaultChecked={reviewStatus === ReviewStatus.RESOLVE}
-            onChange={(checked) => {
-              toggleReviewStatus(record, checked);
-            }}
-          />
-        </div>
-      ),
-    },
-    {
-      title: "操作",
-      key: "action",
-      fixed: "right",
-      align: "center",
-      width: 140,
-      render: (_, record) => (
-        <Space size="small">
+      {
+        title: "文章id",
+        dataIndex: "pid",
+        key: "pid",
+        width: 150,
+        align: "center",
+      },
+      {
+        title: "文章标题",
+        dataIndex: "postTitle",
+        key: "postTitle",
+        width: 150,
+        align: "center",
+        render: (title: string, record) => {
+          return (
+            <a
+              href={`https://init.center/posts/${record.pid}`}
+              title={title}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                display: "inline-block",
+                width: "100%",
+                whiteSpace: "nowrap",
+                textOverflow: "ellipsis",
+                overflow: "hidden",
+              }}
+            >
+              {title}
+            </a>
+          );
+        },
+      },
+      {
+        title: "用户id",
+        dataIndex: "uid",
+        key: "uid",
+        width: 150,
+        align: "center",
+      },
+      {
+        title: "用户名",
+        dataIndex: "userName",
+        key: "userName",
+        align: "center",
+        width: 80,
+      },
+      {
+        title: "用户头像",
+        dataIndex: "avatar",
+        key: "avatar",
+        align: "center",
+        width: 80,
+        render: (url: string) => (
+          <Image src={url} placeholder={true} width={40} alt="avatar" />
+        ),
+      },
+      {
+        title: "评论内容",
+        dataIndex: "content",
+        key: "content",
+        align: "center",
+        width: 120,
+        render: (_content: string, record) => (
           <Button
-            type="primary"
-            size="small"
-            key="1"
+            type="link"
             onClick={() => {
               setSelectedComment(record);
-              setReplyModalVisible(true);
+              setContentModalVisible(true);
             }}
           >
-            回复
+            点击查看
           </Button>
-          {record.deleteTime ? (
+        ),
+      },
+      {
+        title: "创建时间",
+        dataIndex: "createTime",
+        key: "createTime",
+        align: "center",
+        width: 120,
+        render: (createTime: string) => formatTime(createTime),
+      },
+      {
+        title: "父级评论id",
+        dataIndex: "parentCid",
+        key: "parentCid",
+        width: 150,
+        align: "center",
+        render: (parentCid: string | null) => parentCid ?? "无",
+      },
+      {
+        title: "父级评论用户id",
+        dataIndex: "parentUid",
+        key: "parentUid",
+        width: 150,
+        align: "center",
+        render: (parentUid: string | null) => parentUid ?? "无",
+      },
+      {
+        title: "评论对象评论id",
+        dataIndex: "targetCid",
+        key: "targetCid",
+        width: 150,
+        align: "center",
+        render: (targetCid: string | null) => targetCid ?? "无",
+      },
+      {
+        title: "评论对象用户id",
+        dataIndex: "targetUid",
+        key: "targetUid",
+        width: 150,
+        align: "center",
+        render: (targetUid: string | null) => targetUid ?? "无",
+      },
+      {
+        title: "评论对象用户名",
+        dataIndex: "targetName",
+        key: "targetName",
+        width: 150,
+        align: "center",
+        render: (targetName: string | null) => targetName ?? "无",
+      },
+      {
+        title: "浏览器",
+        dataIndex: "browser",
+        key: "browser",
+        width: 150,
+        align: "center",
+        render: (targetName: string | null) => targetName ?? "未知",
+      },
+      {
+        title: "浏览器内核",
+        dataIndex: "engine",
+        key: "engine",
+        width: 150,
+        align: "center",
+        render: (targetName: string | null) => targetName ?? "未知",
+      },
+      {
+        title: "ip地址",
+        dataIndex: "ip",
+        key: "ip",
+        width: 150,
+        align: "center",
+        render: (targetName: string | null) => targetName ?? "未知",
+      },
+      {
+        title: "操作系统",
+        dataIndex: "os",
+        key: "os",
+        width: 150,
+        align: "center",
+        render: (targetName: string | null) => targetName ?? "未知",
+      },
+      {
+        title: "审核状态",
+        key: "reviewStatus",
+        dataIndex: "reviewStatus",
+        align: "center",
+        width: 100,
+        render: (reviewStatus: ReviewStatus, record) => (
+          <div>
+            <p>
+              <Badge
+                status={
+                  reviewStatus === ReviewStatus.PENDING
+                    ? "warning"
+                    : reviewStatus === ReviewStatus.RESOLVE
+                    ? "success"
+                    : "error"
+                }
+              />
+              {reviewStatus === ReviewStatus.PENDING
+                ? "未审核"
+                : reviewStatus === ReviewStatus.RESOLVE
+                ? "通过"
+                : reviewStatus === ReviewStatus.REJECT
+                ? "未通过"
+                : "未知状态"}
+            </p>
+            <Switch
+              defaultChecked={reviewStatus === ReviewStatus.RESOLVE}
+              onChange={(checked) => {
+                toggleReviewStatus(record, checked);
+              }}
+            />
+          </div>
+        ),
+      },
+      {
+        title: "操作",
+        key: "action",
+        fixed: "right",
+        align: "center",
+        width: 140,
+        render: (_, record) => (
+          <Space size="small">
             <Button
               type="primary"
               size="small"
-              key="2"
-              onClick={() => toggleDelete(record)}
+              key="1"
+              onClick={() => {
+                setSelectedComment(record);
+                setReplyModalVisible(true);
+              }}
             >
-              恢复
+              回复
             </Button>
-          ) : (
-            <Button
-              type="primary"
-              size="small"
-              key="2"
-              danger
-              onClick={() => toggleDelete(record)}
-            >
-              删除
-            </Button>
-          )}
-        </Space>
-      ),
-    },
-  ];
+            {record.deleteTime ? (
+              <Button
+                type="primary"
+                size="small"
+                key="2"
+                onClick={() => toggleDelete(record)}
+              >
+                恢复
+              </Button>
+            ) : (
+              <Button
+                type="primary"
+                size="small"
+                key="2"
+                danger
+                onClick={() => toggleDelete(record)}
+              >
+                删除
+              </Button>
+            )}
+          </Space>
+        ),
+      },
+    ],
+    [toggleDelete, toggleReviewStatus]
+  );
 
-  const searchFields: SearchItem[] = [
-    {
-      name: "reviewStatus",
-      label: "审核状态",
-      render: () => {
-        return (
-          <Select style={{ width: 120 }} placeholder="未选择">
-            <Option value={3}>所有</Option>
-            <Option value={1}>通过</Option>
-            <Option value={2}>未通过</Option>
-            <Option value={0}>未审核</Option>
-          </Select>
-        );
+  const searchFields: SearchItem[] = useMemo(
+    () => [
+      {
+        name: "reviewStatus",
+        label: "审核状态",
+        render: () => {
+          return (
+            <Select style={{ width: 120 }} placeholder="未选择">
+              <Option value={3}>所有</Option>
+              <Option value={1}>通过</Option>
+              <Option value={2}>未通过</Option>
+              <Option value={0}>未审核</Option>
+            </Select>
+          );
+        },
       },
-    },
-    {
-      name: "isDelete",
-      label: "删除状态",
-      render: () => {
-        return (
-          <Select style={{ width: 120 }} placeholder="未选择">
-            <Option value={2}>所有</Option>
-            <Option value={1}>删除</Option>
-            <Option value={0}>未删除</Option>
-          </Select>
-        );
+      {
+        name: "isDelete",
+        label: "删除状态",
+        render: () => {
+          return (
+            <Select style={{ width: 120 }} placeholder="未选择">
+              <Option value={2}>所有</Option>
+              <Option value={1}>删除</Option>
+              <Option value={0}>未删除</Option>
+            </Select>
+          );
+        },
       },
-    },
-    {
-      name: "rangeDate",
-      label: "创建时间",
-      render: () => {
-        return <RangePicker />;
+      {
+        name: "rangeDate",
+        label: "创建时间",
+        render: () => {
+          return <RangePicker />;
+        },
       },
-    },
-    {
-      name: "pid",
-      label: false,
-      render: () => {
-        return <Input placeholder="请输入评论的文章id" />;
+      {
+        name: "pid",
+        label: false,
+        render: () => {
+          return <Input placeholder="请输入评论的文章id" />;
+        },
       },
-    },
-    {
-      name: "uid",
-      label: false,
-      render: () => {
-        return <Input placeholder="请输入评论的用户id" />;
+      {
+        name: "uid",
+        label: false,
+        render: () => {
+          return <Input placeholder="请输入评论的用户id" />;
+        },
       },
-    },
-  ];
+    ],
+    []
+  );
 
   return (
     <AdminLayout>
@@ -623,6 +641,6 @@ const CommentList: FC = () => {
       </div>
     </AdminLayout>
   );
-};
+});
 
 export default CommentList;

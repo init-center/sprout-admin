@@ -43,12 +43,14 @@ const AdminLayout: FC = ({ children }) => {
         const msg = error?.response?.data?.message;
         const statusCode = error?.response?.status;
         if (msg) {
+          message.destroy();
           message.error(msg);
         }
 
         if (statusCode === 401) {
           history.push("/login");
         }
+        return;
       }
     })();
   }, [history]);

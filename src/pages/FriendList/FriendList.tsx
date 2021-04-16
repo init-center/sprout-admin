@@ -1,4 +1,11 @@
-import React, { FC, useCallback, useEffect, useState } from "react";
+import React, {
+  FC,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import TableWrapper from "../../components/TableWrapper/TableWrapper";
 import AdminLayout from "../../layouts/AdminLayout/AdminLayout";
 import { useHistory as useRouter } from "react-router-dom";
@@ -9,6 +16,7 @@ import { ExclamationCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { ColumnsType } from "antd/es/table";
 import { SearchItem } from "../../components/TableWrapper/TableSearch/TableSearch";
 import { Callbacks } from "rc-field-form/lib/interface";
+import { useChangeTitle } from "../../hooks/useChangeTitle";
 
 type SearchValuesType = {
   keyword: string | null;
@@ -21,7 +29,7 @@ const searchInitialValues: SearchValuesType = {
 const Table = TableWrapper<FriendItem, SearchValuesType>();
 const { confirm } = Modal;
 
-const FriendList: FC = () => {
+const FriendList: FC = memo(() => {
   const router = useRouter();
   const [isTableLoading, setIsTableLoading] = useState<boolean>(true);
   const [friendList, setFriendList] = useState<FriendListType>({
@@ -116,6 +124,7 @@ const FriendList: FC = () => {
       intro: string;
     }) => {
       if (!selectedFriend) {
+        message.destroy();
         message.error("没有更新对象！");
         return;
       }
@@ -214,80 +223,88 @@ const FriendList: FC = () => {
     [getAllFriends]
   );
 
+  useChangeTitle("友链列表");
+
   useEffect(() => {
     getAllFriends();
   }, [getAllFriends]);
 
-  const columns: ColumnsType<FriendItem> = [
-    {
-      title: "友链名",
-      dataIndex: "name",
-      key: "name",
-      align: "center",
-    },
-    {
-      title: "友链地址",
-      dataIndex: "url",
-      key: "url",
-      align: "center",
-    },
-    {
-      title: "头像",
-      dataIndex: "avatar",
-      key: "avatar",
-      align: "center",
-      width: 80,
-      render: (url: string) => (
-        <Image src={url} placeholder={true} width={40} alt="avatar" />
-      ),
-    },
-    {
-      title: "简介",
-      dataIndex: "intro",
-      key: "intro",
-      align: "center",
-    },
-    {
-      title: "操作",
-      key: "action",
-      fixed: "right",
-      align: "center",
-      render: (_, record) => (
-        <Space size="small">
-          <Button
-            type="primary"
-            size="small"
-            key="1"
-            onClick={() => {
-              setSelectedFriend(record);
-              setEditModalVisible(true);
-            }}
-          >
-            编辑
-          </Button>
-          <Button
-            type="primary"
-            size="small"
-            key="2"
-            danger
-            onClick={() => onDelete(record)}
-          >
-            删除
-          </Button>
-        </Space>
-      ),
-    },
-  ];
-
-  const searchFields: SearchItem[] = [
-    {
-      name: "keyword",
-      label: false,
-      render: () => {
-        return <Input placeholder="请输入关键词" />;
+  const columns: ColumnsType<FriendItem> = useMemo(
+    () => [
+      {
+        title: "友链名",
+        dataIndex: "name",
+        key: "name",
+        align: "center",
       },
-    },
-  ];
+      {
+        title: "友链地址",
+        dataIndex: "url",
+        key: "url",
+        align: "center",
+      },
+      {
+        title: "头像",
+        dataIndex: "avatar",
+        key: "avatar",
+        align: "center",
+        width: 80,
+        render: (url: string) => (
+          <Image src={url} placeholder={true} width={40} alt="avatar" />
+        ),
+      },
+      {
+        title: "简介",
+        dataIndex: "intro",
+        key: "intro",
+        align: "center",
+      },
+      {
+        title: "操作",
+        key: "action",
+        fixed: "right",
+        align: "center",
+        render: (_, record) => (
+          <Space size="small">
+            <Button
+              type="primary"
+              size="small"
+              key="1"
+              onClick={() => {
+                setSelectedFriend(record);
+                setEditModalVisible(true);
+              }}
+            >
+              编辑
+            </Button>
+            <Button
+              type="primary"
+              size="small"
+              key="2"
+              danger
+              onClick={() => onDelete(record)}
+            >
+              删除
+            </Button>
+          </Space>
+        ),
+      },
+    ],
+    []
+  );
+
+  const searchFields: SearchItem[] = useMemo(
+    () => [
+      {
+        name: "keyword",
+        label: false,
+        render: () => {
+          return <Input placeholder="请输入关键词" />;
+        },
+      },
+    ],
+    []
+  );
 
   return (
     <AdminLayout>
@@ -397,6 +414,6 @@ const FriendList: FC = () => {
       </div>
     </AdminLayout>
   );
-};
+});
 
 export default FriendList;

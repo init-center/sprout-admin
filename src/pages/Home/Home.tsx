@@ -1,4 +1,4 @@
-import React, { FC, useState, useEffect, useCallback } from "react";
+import React, { FC, useState, useEffect, useCallback, memo } from "react";
 import AdminLayout from "../../layouts/AdminLayout/AdminLayout";
 import ReactEcharts from "echarts-for-react";
 import { Card, Statistic, Row, Col, message, Empty } from "antd";
@@ -12,8 +12,9 @@ import {
   TagsPostsCountList,
 } from "../../types";
 import http, { ResponseData } from "../../utils/http/http";
+import { useChangeTitle } from "../../hooks/useChangeTitle";
 
-const Home: FC = () => {
+const Home: FC = memo(() => {
   const [userAnalysis, setUserAnalysis] = useState<BaseAnalysisType>({
     total: 0,
     recentIncreaseList: [],
@@ -71,6 +72,7 @@ const Home: FC = () => {
     } catch (error) {
       const msg = error?.response?.data?.message;
       if (msg) {
+        message.destroy();
         message.error(msg);
       }
     }
@@ -93,6 +95,7 @@ const Home: FC = () => {
     } catch (error) {
       const msg = error?.response?.data?.message;
       if (msg) {
+        message.destroy();
         message.error(msg);
       }
     }
@@ -115,6 +118,7 @@ const Home: FC = () => {
     } catch (error) {
       const msg = error?.response?.data?.message;
       if (msg) {
+        message.destroy();
         message.error(msg);
       }
     }
@@ -137,6 +141,7 @@ const Home: FC = () => {
     } catch (error) {
       const msg = error?.response?.data?.message;
       if (msg) {
+        message.destroy();
         message.error(msg);
       }
     }
@@ -153,6 +158,7 @@ const Home: FC = () => {
     } catch (error) {
       const msg = error?.response?.data?.message;
       if (msg) {
+        message.destroy();
         message.error(msg);
       }
     }
@@ -169,6 +175,7 @@ const Home: FC = () => {
     } catch (error) {
       const msg = error?.response?.data?.message;
       if (msg) {
+        message.destroy();
         message.error(msg);
       }
     }
@@ -185,6 +192,7 @@ const Home: FC = () => {
     } catch (error) {
       const msg = error?.response?.data?.message;
       if (msg) {
+        message.destroy();
         message.error(msg);
       }
     }
@@ -201,10 +209,13 @@ const Home: FC = () => {
     } catch (error) {
       const msg = error?.response?.data?.message;
       if (msg) {
+        message.destroy();
         message.error(msg);
       }
     }
   }, []);
+
+  useChangeTitle("主页");
 
   useEffect(() => {
     fetchUserAnalysis();
@@ -226,7 +237,7 @@ const Home: FC = () => {
     fetchComplexAnalysis,
   ]);
 
-  const getViewsChartOptions = (): echarts.EChartOption => {
+  const getViewsChartOptions = useCallback((): echarts.EChartOption => {
     const xData = viewsAnalysis.recentIncreaseList.map((item) => item.date);
     const seriesData = viewsAnalysis.recentIncreaseList.map(
       (item) => item.increase
@@ -283,9 +294,9 @@ const Home: FC = () => {
         left: 6,
       },
     };
-  };
+  }, [viewsAnalysis.recentIncreaseList]);
 
-  const getUsersChartOptions = (): echarts.EChartOption => {
+  const getUsersChartOptions = useCallback((): echarts.EChartOption => {
     const xData = userAnalysis.recentIncreaseList.map((item) => item.date);
     const seriesData = userAnalysis.recentIncreaseList.map(
       (item) => item.increase
@@ -328,9 +339,9 @@ const Home: FC = () => {
         left: 0,
       },
     };
-  };
+  }, [userAnalysis.recentIncreaseList]);
 
-  const getCommentsChartOptions = (): echarts.EChartOption => {
+  const getCommentsChartOptions = useCallback((): echarts.EChartOption => {
     const xData = commentAnalysis.recentIncreaseList.map((item) => item.date);
     const seriesData = commentAnalysis.recentIncreaseList.map(
       (item) => item.increase
@@ -380,9 +391,9 @@ const Home: FC = () => {
         left: 6,
       },
     };
-  };
+  }, [commentAnalysis.recentIncreaseList]);
 
-  const getPostTargetChartOptions = (): echarts.EChartOption => {
+  const getPostTargetChartOptions = useCallback((): echarts.EChartOption => {
     return {
       xAxis: {
         type: "value",
@@ -418,9 +429,9 @@ const Home: FC = () => {
         bottom: 0,
       },
     };
-  };
+  }, [postAnalysis.average, postAnalysis.monthIncrease]);
 
-  const getDatasetChartOptions = (): echarts.EChartOption => {
+  const getDatasetChartOptions = useCallback((): echarts.EChartOption => {
     return {
       dataset: {
         dimensions: ["月份", "访问量", "评论量", "用户量"],
@@ -471,9 +482,9 @@ const Home: FC = () => {
         },
       },
     };
-  };
+  }, [complexAnalysis]);
 
-  const getPostCategoriesChartOptions = (): echarts.EChartOption => {
+  const getPostCategoriesChartOptions = useCallback((): echarts.EChartOption => {
     return {
       title: {
         text: "文章分类分布",
@@ -510,9 +521,9 @@ const Home: FC = () => {
         },
       ],
     };
-  };
+  }, [categoriesPostsCountList]);
 
-  const getPostTagsChartOptions = (): echarts.EChartOption => {
+  const getPostTagsChartOptions = useCallback((): echarts.EChartOption => {
     return {
       title: {
         text: "文章标签分布",
@@ -549,7 +560,7 @@ const Home: FC = () => {
         },
       ],
     };
-  };
+  }, [tagsPostsCountList]);
 
   return (
     <AdminLayout>
@@ -692,6 +703,6 @@ const Home: FC = () => {
       </div>
     </AdminLayout>
   );
-};
+});
 
 export default Home;

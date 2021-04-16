@@ -1,7 +1,10 @@
 import marked, { Renderer } from "marked";
-import emojiExtension from "./emojiExtension";
-import { addLazyLoadAttrToMdImg } from "./lazyLoad/lazyLoad";
+import emojiExtension from "./extensions/emojiExtension/emojiExtension";
+import { addLazyLoadAttrToMdImg } from "../lazyLoad/lazyLoad";
 import { highlightAuto } from "highlight.js";
+import striptags from "striptags";
+import katexExtension from "./extensions/katexExtension/katexExtension";
+import mdStyles from "../../styles/mdStyle.module.scss";
 
 type TitleLevel = 1 | 2 | 3 | 4 | 5 | 6;
 export type Title = {
@@ -107,15 +110,64 @@ export default function md2html(
   if (getTitle) {
     let index = 0;
     renderer.heading = function (text, level): string {
-      const id = `${level}_${text}_${index}`;
+      const stripTagsHeader = striptags(text);
+      const id = `${level}_${stripTagsHeader}_${index}`;
       //使用上面定义的分析标题函数
-      pushTitle(level, text, index, id, titleArr);
+      pushTitle(level, stripTagsHeader, index, id, titleArr);
       titleIds.push(id);
 
       //返回标题格式
-      return `<h${level} id="${level}_${text}_${index++}">${text}</h${level}>`;
+      return `<h${level} id="${level}_${stripTagsHeader}_${index++}">${text}</h${level}>`;
     };
   }
+
+  renderer.code = function (code, language) {
+    if (language === "mermaid") {
+      return `<div class="mermaid ${mdStyles.mermaid}">${code}</div>`;
+    } else {
+      return `<pre><code class="hljs-${language}">${
+        highlightAuto ? highlightAuto(code).value : code
+      }</code></pre>`;
+    }
+  };
+
+  const supportFootnote = (mdString: string) => {
+    const footnoteRefReg = /\[\^ *?([^\[^\]^\n^\s]{1}[^\[^\]^\n]*?)\]/gi;
+
+    const footnoteReg = /^\[\^ *?([^\[^\]^\n^\s]{1}[^\[^\]^\n]*?)\]: *?(.+)$/gim;
+
+    interface Footnote {
+      index: number;
+      name: string;
+    }
+    const footnotes: Footnote[] = [];
+    let footnoteIndex = 1;
+    mdString = mdString.replace(footnoteReg, (_substring, p1, p2) => {
+      const index = footnoteIndex++;
+      if (!footnotes.includes(p1)) {
+        footnotes.push({
+          index,
+          name: p1,
+        });
+      }
+      return `<p id="fn${index}" class="${mdStyles["footnote-item"]}">
+    <span class="${mdStyles["footnote-index"]}">[${index}]</span>${p2}<a class="${mdStyles["fn-ref"]}" href="#fnref${index}">↩︎</a>
+    </p>`;
+    });
+
+    mdString = mdString.replace(footnoteRefReg, (substring, p1) => {
+      const footnote = footnotes.find((f) => f.name === p1);
+      if (footnote) {
+        return `<sup id="fnref${footnote.index}" class="${mdStyles.sup}"><a href="#fn${footnote.index}">[${footnote.index}]</a></sup>`;
+      } else {
+        return substring;
+      }
+    });
+
+    return mdString;
+  };
+
+  mdString = supportFootnote(mdString);
 
   marked.setOptions({
     highlight: function (code) {
@@ -132,9 +184,13 @@ export default function md2html(
   return {
     htmlContent: lazyLoad
       ? addLazyLoadAttrToMdImg(
-          emojiExtension(marked(mdString, { renderer: renderer }))
+          katexExtension(
+            emojiExtension(marked(mdString, { renderer: renderer }))
+          )
         )
-      : emojiExtension(marked(mdString, { renderer: renderer })),
+      : katexExtension(
+          emojiExtension(marked(mdString, { renderer: renderer }))
+        ),
     titles: titleArr,
     titleIds: Array.from(new Set(titleIds)),
     titleChildrenIdMap: getTitle ? genTitleChildrenIdMap(titleArr) : {},

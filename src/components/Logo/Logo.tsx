@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, memo } from "react";
 import styles from "./Logo.module.scss";
 
 interface LogoProps {
@@ -18,4 +18,4 @@ const Logo: FC<LogoProps> = ({ isTitleShow = true }) => {
   );
 };
 
-export default Logo;
+export default memo(Logo);

@@ -23,6 +23,7 @@ jobs:
           APP_CONFIGS : ${{ secrets.APP_CONFIGS }}
       - run: npm install yarn -g
       - run: yarn install
+      - run: yarn run format
       - run: yarn build
       - name: copy file via ssh key
         uses: easingthemes/ssh-deploy@v2.1.5

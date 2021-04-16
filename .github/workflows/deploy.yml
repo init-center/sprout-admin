@@ -30,4 +30,4 @@ jobs:
           SOURCE: "/build"
           REMOTE_HOST: ${{ secrets.ALIYUN_HOST }}
           REMOTE_USER: ${{ secrets.ALIYUN_USER }}
-          TARGET: "/opt/sprout_admin"
+          TARGET: "/opt/programs/sprout_admin"

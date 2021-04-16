@@ -290,7 +290,7 @@ const FriendList: FC = memo(() => {
         ),
       },
     ],
-    []
+    [onDelete]
   );
 
   const searchFields: SearchItem[] = useMemo(

@@ -330,7 +330,7 @@ const ConfigList: FC = memo(() => {
         ),
       },
     ],
-    []
+    [onDelete]
   );
 
   const searchFields: SearchItem[] = useMemo(

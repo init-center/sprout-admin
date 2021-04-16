@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from "axios";
-import { SERVER_HOST } from "../../../configs";
+import configs from "../../configs";
 
 export type Response<T> = AxiosResponse<T>;
 
@@ -12,7 +12,7 @@ export interface ResponseData<T = unknown> {
 
 // create axios instance
 const axiosInstance = axios.create({
-  baseURL: SERVER_HOST,
+  baseURL: configs.SERVER_HOST,
   timeout: 20000,
   withCredentials: true,
 });

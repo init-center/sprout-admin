@@ -15,7 +15,7 @@ const Login: FC = memo(() => {
   useEffect(() => {
     (async () => {
       try {
-        const result = await http.get("/session");
+        const result = await http.get("/session/admin");
         if (result.status === 200 && result.data.code === 2000) {
           message.success("你已处于登录状态！");
           backToPrevPage();

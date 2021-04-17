@@ -1,0 +1,29 @@
+body {
+  --theme-color: #fb7299;
+  --theme-color-rgb: 251, 114, 153;
+  --background-color: #fff;
+  --background-color-second: #f7f9fa;
+  --background-hover-color: rgba(0, 0, 0, 0.1);
+  --background-hover-theme-color: rgba(var(--theme-color-rgb), 0.2);
+  --font-color: #0f1419;
+  --font-color-second: #5b7083;
+  --border-color: #dadada;
+  --border-color-second: #eaeaea;
+  --default-border: 1px solid var(--border-color);
+  --box-shadow: 0 1px 2px 0 rgb(0 0 0 / 5%);
+  --error-color: #ff4c4c;
+  --post-card-background: #fff;
+  --banner-font-color: #fff;
+}
+
+body.dark {
+  --background-color: #000;
+  --background-color-second: #15181c;
+  --background-hover-color: rgba(255, 255, 255, 0.2);
+  --font-color: #ddd;
+  --font-color-second: #6e767d;
+  --border-color: #2f3336;
+  --border-color-second: #363636;
+  --post-card-background: var(--background-color-second);
+  --banner-font-color: var(--font-color);
+}

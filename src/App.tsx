@@ -4,6 +4,7 @@ import { routes } from "./routes/routes";
 import Loading from "./components/Loading/Loading";
 import "antd/dist/antd.css";
 import "./App.css";
+import "./styles/cssVariables.scss";
 
 function App() {
   return (

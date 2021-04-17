@@ -159,7 +159,7 @@ const UserList: FC = memo(() => {
           message.error(msg);
         }
 
-        if (statusCode === 401) {
+        if (statusCode === 401 || statusCode === 403) {
           router.push("/login");
         }
       }

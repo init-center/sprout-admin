@@ -47,7 +47,7 @@ const AdminLayout: FC = ({ children }) => {
           message.error(msg);
         }
 
-        if (statusCode === 401) {
+        if (statusCode === 401 || statusCode === 403) {
           history.push("/login");
         }
         return;

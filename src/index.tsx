@@ -3,6 +3,12 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
+import configs from "./configs";
+import { disableReactDevTools } from "./utils/disableDevTools/disableDevTools";
+
+if (!configs.isDev) {
+  disableReactDevTools();
+}
 
 ReactDOM.render(<App />, document.getElementById("root"));
 

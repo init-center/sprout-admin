@@ -1,4 +1,4 @@
-import React, { FC, memo, useCallback, useEffect } from "react";
+import React, { FC, memo, useEffect, useMemo } from "react";
 import { Form, Input, Button, message } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { Callbacks } from "rc-field-form/lib/interface";
@@ -8,6 +8,7 @@ import http from "../../utils/http/http";
 import backToPrevPage from "../../utils/backToPrevPage";
 import styles from "./Login.module.scss";
 import { useChangeTitle } from "../../hooks/useChangeTitle";
+import { debounce } from "../../utils/debounce/debounce";
 
 const Login: FC = memo(() => {
   const router = useRouter();
@@ -24,22 +25,27 @@ const Login: FC = memo(() => {
     })();
   }, []);
 
-  const login = useCallback(async (values: Callbacks): Promise<void> => {
-    try {
-      const result = await http.post("/session", { ...values });
-      if (result.status === 201 && result.data.code === 2001) {
-        const token = result.data.data.token;
-        localStorage.setItem("token", `Bearer ${token}`);
-        message.success("登录成功！");
-        backToPrevPage();
-      }
-    } catch (error) {
-      const msg = error?.response?.data?.message ?? "登录失败！";
-      if (window) {
-        message.error(msg);
-      }
-    }
-  }, []);
+  const login = useMemo(
+    () =>
+      debounce(async (values): Promise<void> => {
+        try {
+          const result = await http.post("/session", values);
+          if (result.status === 201 && result.data.code === 2001) {
+            const token = result.data.data.token;
+            localStorage.setItem("token", `Bearer ${token}`);
+            message.success("登录成功！");
+            backToPrevPage();
+          }
+        } catch (error) {
+          const msg = error?.response?.data?.message ?? "登录失败！";
+          if (window) {
+            message.destroy();
+            message.error(msg);
+          }
+        }
+      }, 500),
+    []
+  );
 
   useChangeTitle("登录");
 

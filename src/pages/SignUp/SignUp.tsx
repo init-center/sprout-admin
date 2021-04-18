@@ -1,11 +1,4 @@
-import React, {
-  FC,
-  useState,
-  useRef,
-  useEffect,
-  useCallback,
-  memo,
-} from "react";
+import React, { FC, useState, useRef, useEffect, memo, useMemo } from "react";
 import { Form, Input, Button, message } from "antd";
 import {
   UserOutlined,
@@ -19,12 +12,12 @@ import {
   validEmail,
   validName,
 } from "../../utils/valid/valid_rules";
-import { Callbacks } from "rc-field-form/lib/interface";
 import { useHistory as useRouter } from "react-router-dom";
 import http from "../../utils/http/http";
 import backToPrevPage from "../../utils/backToPrevPage";
 import styles from "./SignUp.module.scss";
 import { useChangeTitle } from "../../hooks/useChangeTitle";
+import { debounce } from "../../utils/debounce/debounce";
 
 const SignUp: FC = memo(() => {
   const router = useRouter();
@@ -44,46 +37,61 @@ const SignUp: FC = memo(() => {
     };
   }, []);
 
-  const sendCode = useCallback(async (): Promise<void> => {
-    if (isSendingCode) return;
-    try {
-      const validResult = await form.validateFields(["email"]);
-      const email = validResult.email;
-      await http.post("/vcode/ecode", {
-        email,
-        type: 1,
-      });
-      let time = 120;
-      setIsSendingCode(true);
-      const sendCodeBtn = sendCodeBtnRef.current;
-      const span = sendCodeBtn && sendCodeBtn.querySelector("span");
-      timerRef.current = window.setInterval(() => {
-        if (time <= 0) {
-          clearInterval(timerRef.current);
-          span && (span.innerText = "发送验证码");
-          setIsSendingCode(false);
-        } else {
-          time -= 1;
-          span && (span.innerText = String(time));
+  const sendCode = useMemo(
+    () =>
+      debounce(async () => {
+        if (isSendingCode) return;
+        try {
+          const validResult = await form.validateFields(["email"]);
+          const email = validResult.email;
+          await http.post("/vcode/ecode", {
+            email,
+            type: 1,
+          });
+          let time = 120;
+          setIsSendingCode(true);
+          const sendCodeBtn = sendCodeBtnRef.current;
+          const span = sendCodeBtn && sendCodeBtn.querySelector("span");
+          timerRef.current = window.setInterval(() => {
+            if (time <= 0) {
+              clearInterval(timerRef.current);
+              span && (span.innerText = "发送验证码");
+              setIsSendingCode(false);
+            } else {
+              time -= 1;
+              span && (span.innerText = String(time));
+            }
+          }, 1000);
+        } catch (error) {
+          const msg = error?.response?.data?.message ?? "发送失败！";
+          if (window) {
+            message.destroy();
+            message.error(msg);
+          }
+          return;
         }
-      }, 1000);
-    } catch (error) {
-      return;
-    }
-  }, [form, isSendingCode]);
+      }, 500),
+    [form, isSendingCode]
+  );
 
-  const signUp = useCallback(
-    async (values: Callbacks) => {
-      try {
-        const result = await http.post("/users", { ...values });
-        if (result.status === 201 && result.data.code === 2001) {
-          message.success("注册成功！");
-          router.push("/login");
+  const signUp = useMemo(
+    () =>
+      debounce(async (values) => {
+        try {
+          const result = await http.post("/users", values);
+          if (result.status === 201 && result.data.code === 2001) {
+            message.success("注册成功！");
+            router.push("/login");
+          }
+        } catch (error) {
+          const msg = error?.response?.data?.message ?? "注册失败！";
+          if (window) {
+            message.destroy();
+            message.error(msg);
+          }
+          return;
         }
-      } catch (error) {
-        return;
-      }
-    },
+      }, 500),
     [router]
   );
 

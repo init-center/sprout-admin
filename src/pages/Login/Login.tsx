@@ -1,7 +1,6 @@
 import React, { FC, memo, useEffect, useMemo } from "react";
 import { Form, Input, Button, message } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
-import { Callbacks } from "rc-field-form/lib/interface";
 import { validIdAndEmail, validPassword } from "../../utils/valid/valid_rules";
 import { useHistory as useRouter } from "react-router-dom";
 import http from "../../utils/http/http";

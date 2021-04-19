@@ -119,15 +119,15 @@
     padding: 0;
 
     @include anchor-with-fixed($post-top-bar-height);
+  }
 
-    code {
-      color: var(--theme-color);
-      padding: 3px 5px;
-      margin: 0 2px;
-      font-size: 0.85em;
-      background-color: var(--background-color-second);
-      white-space: nowrap;
-    }
+  :not(pre) > code {
+    color: var(--theme-color);
+    padding: 3px 5px;
+    margin: 0 2px;
+    font-size: 0.9em;
+    background-color: var(--background-color-second);
+    white-space: nowrap;
   }
 
   del {

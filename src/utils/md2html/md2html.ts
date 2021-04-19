@@ -1,7 +1,7 @@
 import marked, { Renderer } from "marked";
 import emojiExtension from "./extensions/emojiExtension/emojiExtension";
 import { addLazyLoadAttrToMdImg } from "../lazyLoad/lazyLoad";
-import { highlightAuto } from "highlight.js";
+import hljs from "highlight.js";
 import striptags from "striptags";
 import katexExtension from "./extensions/katexExtension/katexExtension";
 import mdStyles from "../../styles/mdStyle.module.scss";
@@ -126,7 +126,11 @@ export default function md2html(
       return `<div class="mermaid ${mdStyles.mermaid}">${code}</div>`;
     } else {
       return `<pre><code class="hljs-${language}">${
-        highlightAuto ? highlightAuto(code).value : code
+        hljs.getLanguage(language)
+          ? hljs.highlight(language, code).value
+          : hljs.highlightAuto
+          ? hljs.highlightAuto(code).value
+          : code
       }</code></pre>`;
     }
   };
@@ -170,8 +174,12 @@ export default function md2html(
   mdString = supportFootnote(mdString);
 
   marked.setOptions({
-    highlight: function (code) {
-      return highlightAuto ? highlightAuto(code).value : code;
+    highlight: function (code, language) {
+      return hljs.getLanguage(language)
+        ? hljs.highlight(language, code).value
+        : hljs.highlightAuto
+        ? hljs.highlightAuto(code).value
+        : code;
     },
     gfm: true,
     breaks: false,

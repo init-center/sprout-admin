@@ -1,7 +1,7 @@
 import marked, { Renderer } from "marked";
 import emojiExtension from "./extensions/emojiExtension/emojiExtension";
 import { addLazyLoadAttrToMdImg } from "../lazyLoad/lazyLoad";
-import hljs from "highlight.js";
+import { getLanguage, highlight, highlightAuto } from "highlight.js";
 import striptags from "striptags";
 import katexExtension from "./extensions/katexExtension/katexExtension";
 import mdStyles from "../../styles/mdStyle.module.scss";
@@ -125,11 +125,14 @@ export default function md2html(
     if (language === "mermaid") {
       return `<div class="mermaid ${mdStyles.mermaid}">${code}</div>`;
     } else {
+      if (!language) {
+        return `<pre><code class="hljs">${code}</code></pre>`;
+      }
       return `<pre><code class="hljs-${language}">${
-        hljs.getLanguage(language)
-          ? hljs.highlight(language, code).value
-          : hljs.highlightAuto
-          ? hljs.highlightAuto(code).value
+        getLanguage(language)
+          ? highlight(language, code).value
+          : highlightAuto
+          ? highlightAuto(code).value
           : code
       }</code></pre>`;
     }
@@ -174,13 +177,6 @@ export default function md2html(
   mdString = supportFootnote(mdString);
 
   marked.setOptions({
-    highlight: function (code, language) {
-      return hljs.getLanguage(language)
-        ? hljs.highlight(language, code).value
-        : hljs.highlightAuto
-        ? hljs.highlightAuto(code).value
-        : code;
-    },
     gfm: true,
     breaks: false,
     pedantic: false,
